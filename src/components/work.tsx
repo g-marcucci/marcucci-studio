@@ -1,9 +1,9 @@
 "use client";
 
-import { MessageCircle, Percent, Phone, RefreshCw, ShoppingCart, Users } from "lucide-react";
+import { Activity, ArrowRight, Megaphone, MousePointerClick, Percent, Phone, RefreshCw, ShoppingCart, Users } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { brl } from "@/lib/site";
+import { brl, projectHref } from "@/lib/site";
 import { CountUp, IconBadge, LeaderRow, Money, Reveal, SectionLabel, TickGauge } from "./ui";
 
 // Telas do ERP recriadas em código com dados fictícios.
@@ -260,91 +260,285 @@ function MarginScreen() {
   );
 }
 
-const TABS = [
-  { id: "clientes", label: "Clientes", Screen: ClientsScreen },
-  { id: "carrinhos", label: "Carrinhos abandonados", Screen: CartsScreen },
-  { id: "margem", label: "Resultado e margem", Screen: MarginScreen },
+const VISITS = Array.from({ length: 30 }, (_, i) =>
+  Math.round(4200 + 1500 * Math.sin(i * 0.55) + 900 * Math.sin(i * 1.7 + 1) + i * 25),
+);
+const TOP_PRODUCTS = [
+  { name: "Barraca infantil toca cabana", visits: 9_480, conv: "3,1%" },
+  { name: "Rede de vôlei portátil 9,5 m", visits: 7_102, conv: "6,4%" },
+  { name: "Kit 3 camisetas básicas algodão", visits: 5_890, conv: "2,2%" },
+  { name: "Garrafa térmica inox 1L", visits: 4_975, conv: "4,8%" },
+];
+
+function TrafficScreen() {
+  const max = Math.max(...VISITS);
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl border border-line bg-surface p-4">
+        <div className="flex items-center gap-2.5 text-[13px] text-muted">
+          <IconBadge tone="blue">
+            <Activity />
+          </IconBadge>
+          Visitas e conversão
+          <span className="ml-auto text-[11px] text-faint">últimos 30 dias</span>
+        </div>
+        <div className="mt-3 grid gap-4 md:grid-cols-[150px_1fr_1.1fr]">
+          <div className="flex flex-col">
+            <CountUp value={158_420} className="font-display text-[30px] leading-none tracking-tight text-fg" />
+            <span className="mt-1 text-[11px] text-faint">visitas no período</span>
+            <div className="mt-auto grid grid-cols-2 gap-2 pt-4 text-[11px]">
+              <div>
+                <div className="text-faint">Conversão</div>
+                <div className="font-medium text-ok">3,2%</div>
+              </div>
+              <div>
+                <div className="text-faint">Vendas</div>
+                <div className="font-medium text-fg">5.069</div>
+              </div>
+            </div>
+          </div>
+          <div className="flex h-[130px] items-end gap-[3px]">
+            {VISITS.map((v, i) => (
+              <motion.span
+                key={i}
+                className="flex-1 rounded-t-[2px] bg-tiktok/80"
+                initial={{ height: 0 }}
+                animate={{ height: `${(v / max) * 100}%` }}
+                transition={{ duration: 0.6, delay: i * 0.015, ease: [0.22, 1, 0.36, 1] }}
+              />
+            ))}
+          </div>
+          <div>
+            <div className="mb-1 text-[12px] font-medium text-fg">Mais visitados</div>
+            {TOP_PRODUCTS.map((p, i) => (
+              <div key={p.name} className="flex items-center gap-2 border-b border-line py-1.5 last:border-0">
+                <span className="grid size-5 shrink-0 place-items-center rounded-md border border-line font-mono text-[10px] text-faint">{i + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[11.5px] text-fg">{p.name}</div>
+                  <div className="text-[10px] text-faint">{p.visits.toLocaleString("pt-BR")} visitas</div>
+                </div>
+                <span className="text-[11px] font-medium text-ok">{p.conv}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-[1.4fr_1fr]">
+        <div className="rounded-xl border border-line bg-surface p-4">
+          <div className="flex items-center gap-2.5 text-[13px] text-muted">
+            <IconBadge tone="red">
+              <Megaphone />
+            </IconBadge>
+            Publicidade
+          </div>
+          <Money value={34_910.2} className="mt-3 block text-[32px] leading-none text-fg" />
+          <div className="mt-1 text-[11.5px] text-muted">investidos no período</div>
+          <div className="mt-3 text-[13px] font-medium text-ok">R$ 446.870,15 em vendas atribuídas aos anúncios</div>
+        </div>
+        <div className="grid grid-cols-3 gap-2 md:grid-cols-1">
+          {[
+            ["ROAS", "12,8×"],
+            ["ACOS", "7,8%"],
+            ["TACoS", "4,1%"],
+          ].map(([k, v]) => (
+            <div key={k} className="flex items-center justify-between rounded-xl border border-line bg-surface px-3 py-2">
+              <span className="text-[11px] text-faint">{k}</span>
+              <span className="font-display text-[17px] tracking-tight text-fg">{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const MODULES = [
+  {
+    id: "clientes",
+    icon: Users,
+    title: "Clientes",
+    text: "O mesmo comprador reconhecido entre canais pelo CPF/CNPJ, separado por faixa de fidelidade.",
+    Screen: ClientsScreen,
+  },
+  {
+    id: "carrinhos",
+    icon: ShoppingCart,
+    title: "Carrinhos abandonados",
+    text: "Quem chegou ao checkout e não comprou, com contato para chamar de volta.",
+    Screen: CartsScreen,
+  },
+  {
+    id: "resultado",
+    icon: Percent,
+    title: "Resultado e margem",
+    text: "O que sobra de verdade depois de tarifas, frete e estornos, venda por venda.",
+    Screen: MarginScreen,
+  },
+  {
+    id: "trafego",
+    icon: MousePointerClick,
+    title: "Tráfego e anúncios",
+    text: "Visitas, conversão e retorno de cada campanha, lado a lado com as vendas.",
+    Screen: TrafficScreen,
+  },
 ] as const;
 
+const AUTOPLAY_MS = 9000;
+
+const META = [
+  ["Tipo", "Sistema · ERP"],
+  ["Ano", "2026"],
+  ["Escopo", "Produto, design e código"],
+  ["Canais", "Mercado Livre · Shopee · TikTok Shop · Nuvemshop"],
+];
+
 export function Work() {
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("carrinhos");
-  const Active = TABS.find((t) => t.id === tab)!.Screen;
+  const [active, setActive] = useState(0);
+  const [auto, setAuto] = useState(true);
+  const [paused, setPaused] = useState(false);
+  const href = projectHref();
+
+  const select = (i: number) => {
+    setActive(i);
+    setAuto(false);
+  };
 
   return (
     <section id="trabalhos" className="border-t border-line px-5 py-24 md:px-14 md:py-32">
       <Reveal>
         <SectionLabel index="01">Trabalhos</SectionLabel>
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
-          <h2 className="max-w-3xl font-display text-[44px] leading-[0.98] tracking-[-0.03em] text-fg md:text-[72px]">
-            Trabalho em destaque. <span className="text-faint">Um ERP feito do zero.</span>
-          </h2>
+        <div className="mt-6 grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-2 py-1 font-mono text-[11px] text-muted">
+              <span className="text-accent">case 01</span> sistema sob medida
+            </span>
+            <h2 className="mt-4 font-display text-[36px] leading-[0.95] tracking-[-0.035em] text-fg sm:text-[56px] md:text-[80px]">
+              ERP multimarketplace
+            </h2>
+          </div>
+          <p className="text-[16px] leading-relaxed text-muted md:text-[17px]">
+            Quem vende em quatro marketplaces ao mesmo tempo acaba com quatro painéis e nenhuma visão do todo. Esse ERP
+            junta pedidos, clientes, margem e anúncios num lugar só.{" "}
+            <span className="text-fg">Fiz tudo, da arquitetura e das integrações ao visual de cada tela.</span>
+          </p>
         </div>
+        <dl className="mt-10 grid grid-cols-2 border-y border-line md:grid-cols-[0.7fr_0.5fr_1fr_1.8fr]">
+          {META.map(([k, v], i) => (
+            <div key={k} className={`py-3 pr-4 ${i % 2 ? "border-l border-line pl-4" : i ? "md:border-l md:border-line md:pl-4" : ""} ${i > 1 ? "border-t border-line md:border-t-0" : ""}`}>
+              <dt className="font-mono text-[10.5px] tracking-wide text-faint uppercase">{k}</dt>
+              <dd className="mt-1 text-[13.5px] text-fg">{v}</dd>
+            </div>
+          ))}
+        </dl>
       </Reveal>
 
-      <div className="mt-14 grid gap-10 lg:grid-cols-[340px_1fr] lg:gap-14">
-        <Reveal className="lg:sticky lg:top-28 lg:self-start">
-          <div className="flex items-center gap-2 text-[12px] text-faint">
-            <span className="rounded-full border border-line px-2 py-0.5">Sistema · ERP</span>
-            <span className="rounded-full border border-line px-2 py-0.5">2026</span>
-          </div>
-          <h3 className="mt-4 font-display text-3xl tracking-tight text-fg">ERP multimarketplace</h3>
-          <p className="mt-3 text-[15px] leading-relaxed text-muted">
-            Gestão de vendas para quem vende no Mercado Livre, Shopee, TikTok Shop e Nuvemshop ao mesmo tempo. Fiz
-            tudo, da arquitetura e das integrações ao visual de cada tela.
-          </p>
-          <ul className="mt-6 space-y-3 text-[14px]">
-            {[
-              ["4 marketplaces", "pedidos, clientes e anúncios num lugar só"],
-              ["Margem real", "depois de tarifas, frete e estornos"],
-              ["Base unificada", "o mesmo cliente reconhecido entre canais"],
-              ["Carrinhos com contato", "para chamar de volta quem não fechou"],
-            ].map(([t, d]) => (
-              <li key={t} className="flex gap-3">
-                <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-accent" />
-                <span>
-                  <span className="font-medium text-fg">{t}</span> <span className="text-muted">{d}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-6 flex items-center gap-2 text-[12px] text-faint">
-            <MessageCircle className="size-3.5" /> Telas recriadas com dados fictícios. Pode clicar.
+      <div className="mt-12 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-8">
+        <Reveal>
+          <ol className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0">
+            {MODULES.map((m, i) => {
+              const on = i === active;
+              return (
+                <li key={m.id} className="shrink-0 lg:shrink">
+                  <button
+                    type="button"
+                    onClick={() => select(i)}
+                    aria-pressed={on}
+                    className={`relative w-full overflow-hidden rounded-xl border text-left transition-colors ${
+                      on ? "border-line-strong bg-surface shadow-[var(--shadow)]" : "border-transparent hover:bg-surface/60"
+                    } px-3 py-2.5 lg:px-4 lg:py-3.5`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className={`font-mono text-[11px] ${on ? "text-accent" : "text-faint"}`}>0{i + 1}</span>
+                      <m.icon className={`size-4 ${on ? "text-fg" : "text-faint"}`} />
+                      <span className={`text-[14px] whitespace-nowrap ${on ? "font-medium text-fg" : "text-muted"}`}>{m.title}</span>
+                    </div>
+                    <p className={`mt-1.5 hidden pl-[46px] text-[12.5px] leading-relaxed text-muted lg:block ${on ? "" : "lg:hidden"}`}>
+                      {m.text}
+                    </p>
+                    {on && auto && (
+                      <span
+                        key={active}
+                        className="absolute bottom-0 left-0 h-[2px] bg-accent"
+                        style={{
+                          animation: `grow ${AUTOPLAY_MS}ms linear forwards`,
+                          animationPlayState: paused ? "paused" : "running",
+                        }}
+                        onAnimationEnd={() => setActive((a) => (a + 1) % MODULES.length)}
+                      />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+          <p className="mt-4 hidden font-mono text-[11px] leading-relaxed text-faint lg:block">
+            Telas recriadas com dados fictícios. Clique e mexa à vontade.
           </p>
         </Reveal>
 
         <Reveal delay={0.1} className="min-w-0">
-          <div className="rounded-[22px] border border-line-strong bg-surface-2 p-3 md:p-4">
-            <div className="mb-3 flex gap-1 overflow-x-auto rounded-full border border-line bg-surface p-1 text-[12.5px]">
-              {TABS.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTab(t.id)}
-                  className={`relative shrink-0 rounded-full px-3.5 py-1.5 transition-colors ${
-                    tab === t.id ? "text-bg" : "text-muted hover:text-fg"
+          <div
+            className="overflow-hidden rounded-[20px] border border-line-strong bg-surface-2 shadow-[0_30px_60px_-40px_rgb(0_0_0/0.45)]"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+          >
+            <div className="flex items-center gap-3 border-b border-line px-4 py-2.5">
+              <div className="flex gap-1.5">
+                <span className="size-2.5 rounded-full bg-[#ff5f57]" />
+                <span className="size-2.5 rounded-full bg-[#febc2e]" />
+                <span className="size-2.5 rounded-full bg-[#28c840]" />
+              </div>
+              <div className="mx-auto w-full max-w-sm truncate rounded-md bg-surface px-3 py-1 text-center font-mono text-[11px] text-faint">
+                erp.sualoja.com.br/<span className="text-fg">{MODULES[active].id}</span>
+              </div>
+              <div className="w-10" />
+            </div>
+            {/* Todas as telas ocupam a mesma célula: a altura é a da maior, então trocar de módulo não dá pulo. */}
+            <div className="grid grid-cols-[minmax(0,1fr)] p-3 md:p-4">
+              {MODULES.map((m, i) => (
+                <div
+                  key={m.id}
+                  className={`[grid-area:1/1] transition-opacity duration-300 ${
+                    i === active ? "opacity-100" : "pointer-events-none invisible opacity-0"
                   }`}
+                  aria-hidden={i !== active}
+                  inert={i !== active}
                 >
-                  {tab === t.id && (
-                    <motion.span layoutId="tab" className="absolute inset-0 rounded-full bg-fg" transition={{ type: "spring", bounce: 0.2, duration: 0.5 }} />
+                  {i === active ? (
+                    <motion.div key={`on-${m.id}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                      <m.Screen />
+                    </motion.div>
+                  ) : (
+                    <m.Screen />
                   )}
-                  <span className="relative">{t.label}</span>
-                </button>
+                </div>
               ))}
             </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={tab}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
-              >
-                <Active />
-              </motion.div>
-            </AnimatePresence>
           </div>
         </Reveal>
       </div>
+
+      <Reveal>
+        <a
+          href={href}
+          target={href.startsWith("http") ? "_blank" : undefined}
+          rel="noreferrer"
+          className="group mt-10 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-dashed border-line-strong px-6 py-6 transition-colors hover:border-accent md:px-8"
+        >
+          <div className="flex items-center gap-4">
+            <span className="rounded-md border border-line bg-surface px-2 py-1 font-mono text-[11px] text-faint">case 02</span>
+            <span className="font-display text-[24px] tracking-tight text-fg md:text-[30px]">
+              O próximo pode ser o seu.
+            </span>
+          </div>
+          <span className="flex items-center gap-2 text-[14px] font-medium text-fg">
+            Começar um projeto
+            <span className="grid size-8 place-items-center rounded-full bg-accent text-white transition-transform group-hover:translate-x-0.5">
+              <ArrowRight className="size-4" />
+            </span>
+          </span>
+        </a>
+      </Reveal>
     </section>
   );
 }
