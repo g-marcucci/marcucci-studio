@@ -6,8 +6,8 @@ export const site = {
   url: "https://marcucci.studio",
   contact: {
     // Só números, com DDI e DDD. Ex.: "5511999999999"
-    whatsapp: "",
-    email: "",
+    whatsapp: "5541984810977",
+    email: "gabriel@marcucci.studio",
     github: "",
     linkedin: "",
     instagram: "",
@@ -25,12 +25,20 @@ export const site = {
 
 const whatsappMessage = "Olá! Vim pelo site da Marcucci Studio e queria conversar sobre um projeto.";
 
-/** Para onde vão os botões "Começar um projeto". */
+/** Os botões "Começar um projeto" levam ao formulário de contato. */
 export function projectHref() {
-  const { whatsapp, email } = site.contact;
-  if (whatsapp) return `https://wa.me/${whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
-  if (email) return `mailto:${email}?subject=${encodeURIComponent("Projeto · Marcucci Studio")}`;
   return "#contato";
+}
+
+/** Link do WhatsApp com uma mensagem pronta (a padrão, ou a montada pelo formulário). */
+export function whatsappHref(message = whatsappMessage) {
+  return `https://wa.me/${site.contact.whatsapp}?text=${encodeURIComponent(message)}`;
+}
+
+/** WhatsApp formatado para exibir: +55 41 98481-0977. */
+export function whatsappDisplay() {
+  const n = site.contact.whatsapp;
+  return `+${n.slice(0, 2)} ${n.slice(2, 4)} ${n.slice(4, 9)}-${n.slice(9)}`;
 }
 
 export function contactLinks() {

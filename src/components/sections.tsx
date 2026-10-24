@@ -6,6 +6,7 @@ import {
   Bell,
   Code2,
   FileText,
+  Mail,
   MessageCircle,
   MessagesSquare,
   PenTool,
@@ -18,7 +19,8 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { contactLinks, projectHref, site } from "@/lib/site";
+import { contactLinks, projectHref, site, whatsappDisplay, whatsappHref } from "@/lib/site";
+import { ContactForm } from "./contact-form";
 import { Avatar } from "./avatar";
 import { DashboardDemo } from "./dashboard-demo";
 import { Reveal, SectionLabel } from "./ui";
@@ -317,36 +319,44 @@ export function Faq() {
 }
 
 export function Cta() {
-  const href = projectHref();
   const { email } = site.contact;
   return (
-    <section id="contato" className="border-t border-line px-3 py-24 md:px-14 md:py-32">
+    <section id="contato" className="scroll-mt-24 border-t border-line px-3 py-24 md:px-14 md:py-32">
       <Reveal>
-        <div className="brand-panel rounded-[28px] px-6 py-10 text-white md:px-12 md:py-14">
+        <div className="brand-panel rounded-[28px] px-5 py-10 text-white md:px-12 md:py-14">
           <div className="flex justify-between text-[12px] text-white/70">
             <span>Sistemas · Webapps · Automações · Sites</span>
             <span className="hidden sm:block">Projetos sob medida</span>
           </div>
-          <h2 className="mt-10 max-w-3xl font-display text-[44px] leading-[0.98] tracking-[-0.035em] text-white md:text-[80px]">
-            Tem um processo que ainda vive numa planilha? <span className="text-[#d4ff4a]">Me conta.</span>
-          </h2>
-          <div className="mt-10 flex flex-wrap items-center gap-5">
-            <a
-              href={href}
-              target={isExternal(href) ? "_blank" : undefined}
-              rel="noreferrer"
-              className="group flex items-center gap-2 rounded-full bg-[#d4ff4a] px-6 py-3 text-[15px] font-medium text-[#150d36] transition-transform hover:-translate-y-0.5"
-            >
-              Começar um projeto <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
-            {email && (
-              <span className="text-[14px] text-white/75">
-                Ou escreva para{" "}
-                <a href={`mailto:${email}`} className="font-medium text-white underline-offset-4 hover:underline">
-                  {email}
+          <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">
+            <div className="flex flex-col">
+              <h2 className="font-display text-[42px] leading-[0.98] tracking-[-0.035em] text-white md:text-[64px]">
+                Tem um processo que ainda vive numa planilha? <span className="text-[#d4ff4a]">Me conta.</span>
+              </h2>
+              <p className="mt-6 max-w-md text-[16px] leading-relaxed text-white/75">
+                Preencha o formulário e a mensagem chega organizada no meu WhatsApp. Respondo pessoalmente, sem robô no meio.
+              </p>
+              <div className="mt-8 space-y-2 lg:mt-auto lg:pt-10">
+                <span className="block font-mono text-[11px] tracking-wide text-white/50 uppercase">ou fale direto</span>
+                <a
+                  href={whatsappHref()}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex w-fit items-center gap-2.5 text-[16px] text-white transition-colors hover:text-[#d4ff4a]"
+                >
+                  <MessageCircle className="size-4" /> {whatsappDisplay()}
                 </a>
-              </span>
-            )}
+                {email && (
+                  <a
+                    href={`mailto:${email}`}
+                    className="flex w-fit items-center gap-2.5 text-[16px] text-white transition-colors hover:text-[#d4ff4a]"
+                  >
+                    <Mail className="size-4" /> {email}
+                  </a>
+                )}
+              </div>
+            </div>
+            <ContactForm />
           </div>
         </div>
       </Reveal>
@@ -406,13 +416,27 @@ export function Footer() {
 
 export function WhatsAppFloat() {
   const { whatsapp } = site.contact;
+  // Some enquanto a seção de contato está na tela: lá o formulário e o link direto já resolvem.
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    const el = document.getElementById("contato");
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => setHidden(e.isIntersecting), { threshold: 0.15 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   if (!whatsapp) return null;
   return (
     <a
-      href={projectHref()}
+      href={whatsappHref()}
       target="_blank"
       rel="noreferrer"
-      className="fixed right-5 bottom-5 z-50 flex items-center gap-2 rounded-full bg-[#141416] py-2 pr-4 pl-2 text-[13px] font-medium text-white shadow-[0_10px_30px_-8px_rgb(0_0_0/0.5)] ring-1 ring-white/10 transition-transform hover:-translate-y-0.5"
+      aria-hidden={hidden}
+      tabIndex={hidden ? -1 : undefined}
+      className={`fixed right-5 bottom-5 z-50 flex items-center gap-2 rounded-full bg-[#141416] py-2 pr-4 pl-2 text-[13px] font-medium text-white shadow-[0_10px_30px_-8px_rgb(0_0_0/0.5)] ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-0.5 ${
+        hidden ? "pointer-events-none translate-y-4 opacity-0" : "opacity-100"
+      }`}
     >
       <span className="grid size-7 place-items-center rounded-full bg-[#25d366]">
         <MessageCircle className="size-4" />
