@@ -64,13 +64,14 @@ function Module({
 
       <div className={`flex flex-1 flex-col ${horizontal ? "lg:flex-row-reverse" : ""}`}>
         <div
-          className={`relative min-h-[230px] flex-1 overflow-hidden border-b border-line bg-[radial-gradient(var(--line-strong)_1px,transparent_1px)] bg-[size:14px_14px] p-4 ${
-            horizontal ? "lg:border-b-0 lg:border-l" : ""
+          className={`relative overflow-hidden border-b border-line bg-[radial-gradient(var(--line-strong)_1px,transparent_1px)] bg-[size:14px_14px] p-4 ${
+            // Altura fixa: as animações acontecem dentro dela e nunca mudam a altura da linha.
+            horizontal ? "min-h-[230px] flex-1 lg:border-b-0 lg:border-l" : "h-[260px] shrink-0"
           }`}
         >
           {children}
         </div>
-        <div className={`flex flex-col p-5 ${horizontal ? "lg:w-[340px] lg:shrink-0 lg:justify-end" : ""}`}>
+        <div className={`flex flex-1 flex-col p-5 ${horizontal ? "lg:w-[340px] lg:shrink-0 lg:justify-end" : ""}`}>
           <h3 className="font-display text-[26px] leading-tight tracking-tight text-fg">{title}</h3>
           <p className="mt-1.5 text-[14px] leading-relaxed text-muted">{text}</p>
           <div className="mt-4 flex flex-wrap gap-1.5">
@@ -112,8 +113,8 @@ const ORDERS = [
 function SystemsMini() {
   const tick = useTicker(1500);
   return (
-    <Window className="flex h-full min-h-[200px] flex-col">
-      <div className="flex flex-1">
+    <Window className="flex h-full flex-col">
+      <div className="flex min-h-0 flex-1">
         <div className="hidden w-[92px] shrink-0 space-y-1.5 border-r border-line p-2.5 sm:block">
           <div className="mb-3 flex items-center gap-1.5">
             <Avatar size={14} />
@@ -126,7 +127,7 @@ function SystemsMini() {
             </div>
           ))}
         </div>
-        <div className="min-w-0 flex-1 p-2.5">
+        <div className="flex min-w-0 flex-1 flex-col p-2.5">
           <div className="mb-2.5 flex items-center gap-2">
             <span className="text-[11px] font-medium text-fg">Pedidos</span>
             <span className="flex flex-1 items-center gap-1 rounded-md border border-line px-1.5 py-0.5 text-[9px] text-faint">
@@ -136,9 +137,9 @@ function SystemsMini() {
               <Plus className="size-2.5" /> Novo
             </span>
           </div>
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid min-h-0 flex-1 grid-cols-4 gap-1.5">
             {COLS.map((c, ci) => (
-              <div key={c} className="min-h-[130px] rounded-lg bg-surface-2 p-1.5">
+              <div key={c} className="overflow-hidden rounded-lg bg-surface-2 p-1.5">
                 <div className="mb-1.5 flex items-center justify-between text-[9.5px] text-faint">
                   {c}
                   <span className="font-mono">{GHOSTS[ci] + ORDERS.filter((_, oi) => Math.min((tick + oi * 2) % 6, 3) === ci).length}</span>
@@ -292,7 +293,7 @@ function SiteMini() {
       <motion.div
         animate={{ width: mobile ? "42%" : "100%" }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="flex-1"
+        className="min-h-0 flex-1"
       >
         <Window className="h-full">
           <motion.div layout className="space-y-2 p-2.5">
