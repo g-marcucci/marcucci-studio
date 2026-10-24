@@ -2,8 +2,9 @@
 
 import { Activity, ArrowRight, Megaphone, MousePointerClick, Percent, Phone, RefreshCw, ShoppingCart, Users } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { brl, projectHref } from "@/lib/site";
+import { Avatar } from "./avatar";
 import { CountUp, IconBadge, LeaderRow, Money, Reveal, SectionLabel, TickGauge } from "./ui";
 
 // Telas do ERP recriadas em código com dados fictícios.
@@ -403,6 +404,11 @@ export function Work() {
     setAuto(false);
   };
 
+  // No celular a altura muda entre módulos, então não troca sozinho.
+  useEffect(() => {
+    if (matchMedia("(max-width: 767px)").matches) setAuto(false);
+  }, []);
+
   return (
     <section id="trabalhos" className="border-t border-line px-5 py-24 md:px-14 md:py-32">
       <Reveal>
@@ -432,112 +438,128 @@ export function Work() {
         </dl>
       </Reveal>
 
-      <div className="mt-12 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-8">
-        <Reveal>
-          <ol className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0">
+      {/* Palco do case: fundo próprio com grid, módulos em linha e a tela em destaque */}
+      <Reveal delay={0.05}>
+        <div className="relative mt-12 overflow-hidden rounded-[28px] border border-line bg-surface-2/60 p-3 md:p-6 lg:p-8">
+          <div
+            className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(90%_70%_at_50%_0%,black,transparent_85%)]"
+            style={{
+              backgroundImage:
+                "radial-gradient(70% 55% at 50% 0%, color-mix(in oklab, var(--accent) 16%, transparent), transparent 70%), linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px)",
+              backgroundSize: "100% 100%, 32px 32px, 32px 32px",
+            }}
+            aria-hidden
+          />
+
+          <div className="relative -mx-3 flex snap-x gap-2 overflow-x-auto px-3 pb-1 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0 md:pb-0">
             {MODULES.map((m, i) => {
               const on = i === active;
               return (
-                <li key={m.id} className="shrink-0 lg:shrink">
-                  <button
-                    type="button"
-                    onClick={() => select(i)}
-                    aria-pressed={on}
-                    className={`relative w-full overflow-hidden rounded-xl border text-left transition-colors ${
-                      on ? "border-line-strong bg-surface shadow-[var(--shadow)]" : "border-transparent hover:bg-surface/60"
-                    } px-3 py-2.5 lg:px-4 lg:py-3.5`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className={`font-mono text-[11px] ${on ? "text-accent" : "text-faint"}`}>0{i + 1}</span>
-                      <m.icon className={`size-4 ${on ? "text-fg" : "text-faint"}`} />
-                      <span className={`text-[14px] whitespace-nowrap ${on ? "font-medium text-fg" : "text-muted"}`}>{m.title}</span>
-                    </div>
-                    <p className={`mt-1.5 hidden pl-[46px] text-[12.5px] leading-relaxed text-muted lg:block ${on ? "" : "lg:hidden"}`}>
-                      {m.text}
-                    </p>
-                    {on && auto && (
-                      <span
-                        key={active}
-                        className="absolute bottom-0 left-0 h-[2px] bg-accent"
-                        style={{
-                          animation: `grow ${AUTOPLAY_MS}ms linear forwards`,
-                          animationPlayState: paused ? "paused" : "running",
-                        }}
-                        onAnimationEnd={() => setActive((a) => (a + 1) % MODULES.length)}
-                      />
-                    )}
-                  </button>
-                </li>
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => select(i)}
+                  aria-pressed={on}
+                  className={`relative flex w-[230px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300 md:w-auto ${
+                    on
+                      ? "border-line-strong bg-surface shadow-[var(--shadow)]"
+                      : "border-line bg-surface/50 hover:bg-surface/80"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`grid size-8 place-items-center rounded-lg transition-colors ${on ? "bg-accent text-white" : "bg-surface-2 text-muted"}`}>
+                      <m.icon className="size-4" />
+                    </span>
+                    <span className={`font-mono text-[11px] ${on ? "text-accent" : "text-faint"}`}>0{i + 1}</span>
+                  </div>
+                  <div className={`mt-4 text-[15px] font-medium ${on ? "text-fg" : "text-muted"}`}>{m.title}</div>
+                  <p className={`mt-1 text-[12.5px] leading-relaxed transition-colors ${on ? "text-muted" : "text-faint"}`}>{m.text}</p>
+                  <span className="absolute inset-x-0 bottom-0 h-[2px] bg-line" />
+                  {on && (
+                    <span
+                      key={`${active}-${auto}`}
+                      className="absolute bottom-0 left-0 h-[2px] bg-accent"
+                      style={
+                        auto
+                          ? { animation: `grow ${AUTOPLAY_MS}ms linear forwards`, animationPlayState: paused ? "paused" : "running" }
+                          : { width: "100%" }
+                      }
+                      onAnimationEnd={() => auto && setActive((a) => (a + 1) % MODULES.length)}
+                    />
+                  )}
+                </button>
               );
             })}
-          </ol>
-          <p className="mt-4 hidden font-mono text-[11px] leading-relaxed text-faint lg:block">
-            Telas recriadas com dados fictícios. Clique e mexa à vontade.
-          </p>
-        </Reveal>
+          </div>
 
-        <Reveal delay={0.1} className="min-w-0">
           <div
-            className="overflow-hidden rounded-[20px] border border-line-strong bg-surface-2 shadow-[0_30px_60px_-40px_rgb(0_0_0/0.45)]"
+            className="relative mx-auto mt-6 max-w-[1060px] md:mt-8"
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
           >
-            <div className="flex items-center gap-3 border-b border-line px-4 py-2.5">
-              <div className="flex gap-1.5">
-                <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-                <span className="size-2.5 rounded-full bg-[#febc2e]" />
-                <span className="size-2.5 rounded-full bg-[#28c840]" />
-              </div>
-              <div className="mx-auto w-full max-w-sm truncate rounded-md bg-surface px-3 py-1 text-center font-mono text-[11px] text-faint">
-                erp.sualoja.com.br/<span className="text-fg">{MODULES[active].id}</span>
-              </div>
-              <div className="w-10" />
-            </div>
-            {/* Todas as telas ocupam a mesma célula: a altura é a da maior, então trocar de módulo não dá pulo. */}
-            <div className="grid grid-cols-[minmax(0,1fr)] p-3 md:p-4">
-              {MODULES.map((m, i) => (
-                <div
-                  key={m.id}
-                  className={`[grid-area:1/1] transition-opacity duration-300 ${
-                    i === active ? "opacity-100" : "pointer-events-none invisible opacity-0"
-                  }`}
-                  aria-hidden={i !== active}
-                  inert={i !== active}
-                >
-                  {i === active ? (
-                    <motion.div key={`on-${m.id}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                      <m.Screen />
-                    </motion.div>
-                  ) : (
-                    <m.Screen />
-                  )}
+            <div className="overflow-hidden rounded-[18px] border border-line-strong bg-surface-2 shadow-[0_40px_80px_-40px_rgb(20_10_60/0.45),0_0_0_6px_var(--accent-soft)]">
+              <div className="flex items-center gap-3 border-b border-line bg-surface px-4 py-2.5">
+                <div className="flex gap-1.5">
+                  <span className="size-2.5 rounded-full bg-[#ff5f57]" />
+                  <span className="size-2.5 rounded-full bg-[#febc2e]" />
+                  <span className="size-2.5 rounded-full bg-[#28c840]" />
                 </div>
-              ))}
+                <div className="mx-auto w-full max-w-sm truncate rounded-md bg-surface-2 px-3 py-1 text-center font-mono text-[11px] text-faint">
+                  erp.sualoja.com.br/<span className="text-fg">{MODULES[active].id}</span>
+                </div>
+                <span className="hidden font-mono text-[10.5px] text-faint sm:block">dados fictícios</span>
+              </div>
+              {/* Todas as telas ocupam a mesma célula: a altura é a da maior, então trocar de módulo não dá pulo. */}
+              <div className="grid grid-cols-[minmax(0,1fr)] p-3 md:p-4">
+                {MODULES.map((m, i) => (
+                  <div
+                    key={m.id}
+                    className={`[grid-area:1/1] transition-opacity duration-300 ${
+                      // No celular só a tela ativa ocupa espaço; do md pra cima todas reservam altura.
+                      i === active ? "opacity-100" : "pointer-events-none hidden opacity-0 md:invisible md:block"
+                    }`}
+                    aria-hidden={i !== active}
+                    inert={i !== active}
+                  >
+                    {i === active ? (
+                      <motion.div key={`on-${m.id}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                        <m.Screen />
+                      </motion.div>
+                    ) : (
+                      <m.Screen />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </Reveal>
-      </div>
+        </div>
+      </Reveal>
 
       <Reveal>
-        <a
-          href={href}
-          target={href.startsWith("http") ? "_blank" : undefined}
-          rel="noreferrer"
-          className="group mt-10 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-dashed border-line-strong px-6 py-6 transition-colors hover:border-accent md:px-8"
-        >
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-5 rounded-[24px] border border-dashed border-line-strong p-5 md:p-6">
           <div className="flex items-center gap-4">
-            <span className="rounded-md border border-line bg-surface px-2 py-1 font-mono text-[11px] text-faint">case 02</span>
-            <span className="font-display text-[24px] tracking-tight text-fg md:text-[30px]">
-              O próximo pode ser o seu.
+            <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-line bg-surface">
+              <Avatar size={30} />
             </span>
+            <div>
+              <span className="font-mono text-[11px] text-faint">
+                <span className="text-accent">case 02</span> · em aberto
+              </span>
+              <div className="font-display text-[24px] leading-tight tracking-tight text-fg md:text-[30px]">
+                O próximo pode ser o seu.
+              </div>
+            </div>
           </div>
-          <span className="flex items-center gap-2 text-[14px] font-medium text-fg">
-            Começar um projeto
-            <span className="grid size-8 place-items-center rounded-full bg-accent text-white transition-transform group-hover:translate-x-0.5">
-              <ArrowRight className="size-4" />
-            </span>
-          </span>
-        </a>
+          <a
+            href={href}
+            target={href.startsWith("http") ? "_blank" : undefined}
+            rel="noreferrer"
+            className="group flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-[14px] font-medium text-white transition-transform hover:-translate-y-0.5"
+          >
+            Começar um projeto <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </a>
+        </div>
       </Reveal>
     </section>
   );
