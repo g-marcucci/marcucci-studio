@@ -21,7 +21,6 @@ import { useState } from "react";
 import { contactLinks, projectHref, site } from "@/lib/site";
 import { Avatar } from "./avatar";
 import { DashboardDemo } from "./dashboard-demo";
-import { MobileThemeToggle } from "./nav";
 import { Reveal, SectionLabel } from "./ui";
 
 function isExternal(href: string) {
@@ -32,12 +31,11 @@ export function Hero() {
   const href = projectHref();
   return (
     <section id="inicio" className="px-5 pt-14 md:px-14 md:pt-24">
-      <MobileThemeToggle />
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="mx-auto mt-8 max-w-4xl text-center md:mt-0"
+        className="mx-auto max-w-4xl text-center"
       >
         <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 font-pixel text-[12px] font-bold tracking-[0.16em] text-muted uppercase">
           <span className="live-dot size-1.5 rounded-full bg-ok" /> Agenda aberta
