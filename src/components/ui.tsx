@@ -1,7 +1,7 @@
 "use client";
 
-import { animate, motion, useInView } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { motion, useInView } from "motion/react";
+import { useRef } from "react";
 
 export function Reveal({
   children,
@@ -25,28 +25,48 @@ export function Reveal({
   );
 }
 
-/** Anima de 0 até o valor quando o elemento entra na tela (e a cada mudança de valor). */
-function useCountUp(value: number) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
-  const [display, setDisplay] = useState(0);
-  const from = useRef(0);
+const FACE = 1.15; // altura de cada face do odômetro, em em
+const DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const FADE_MASK =
+  "linear-gradient(to bottom, transparent 0%, #000 24%, #000 76%, transparent 100%)";
 
-  useEffect(() => {
-    if (!inView) return;
-    const controls = animate(from.current, value, {
-      duration: 1.1,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: setDisplay,
-    });
-    from.current = value;
-    return () => controls.stop();
-  }, [inView, value]);
-
-  return [ref, display] as const;
+/**
+ * Uma coluna do odômetro: a pilha 0–9 desliza com mola até o algarismo. A
+ * largura é a do algarismo em que ela para (um "1" é mais estreito que um "0"),
+ * dada por uma cópia invisível dele; a pilha fica centrada por cima.
+ */
+function DigitColumn({ digit }: { digit: number }) {
+  return (
+    <span
+      className="inline-grid overflow-hidden"
+      style={{ height: `${FACE}em`, maskImage: FADE_MASK, WebkitMaskImage: FADE_MASK }}
+    >
+      <span className="invisible [grid-area:1/1]" style={{ lineHeight: `${FACE}em` }}>
+        {digit}
+      </span>
+      <motion.span
+        className="flex w-0 flex-col items-center justify-self-center [grid-area:1/1]"
+        initial={{ y: "0em" }}
+        animate={{ y: `${-digit * FACE}em` }}
+        transition={{ type: "spring", duration: 0.7, bounce: 0.18 }}
+      >
+        {DIGITS.map((n) => (
+          <span key={n} className="block" style={{ height: `${FACE}em`, lineHeight: `${FACE}em` }}>
+            {n}
+          </span>
+        ))}
+      </motion.span>
+    </span>
+  );
 }
 
-export function CountUp({
+/**
+ * Número em odômetro, como no ERP: cada dígito gira até o valor. Gira a partir
+ * do zero quando entra na tela e de novo a cada mudança de valor. As colunas são
+ * identificadas pela distância até a vírgula, então ganhar uma casa (999 → 1.000)
+ * acrescenta uma coluna à esquerda sem remontar as outras.
+ */
+export function Odometer({
   value,
   format = (n) => Math.round(n).toLocaleString("pt-BR"),
   className = "",
@@ -55,23 +75,44 @@ export function CountUp({
   format?: (n: number) => string;
   className?: string;
 }) {
-  const [ref, display] = useCountUp(value);
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  const text = format(inView ? value : 0);
+  const comma = text.indexOf(",");
+  const anchor = comma === -1 ? text.length : comma;
+
   return (
-    <span ref={ref} className={`tabular-nums ${className}`}>
-      {format(display)}
+    <span ref={ref} className={`inline-flex items-baseline tabular-nums ${className}`}>
+      <span className="sr-only">{format(value)}</span>
+      <span aria-hidden className="inline-flex items-baseline">
+        {[...text].map((c, i) =>
+          /\d/.test(c) ? (
+            <DigitColumn key={`d${anchor - i}`} digit={Number(c)} />
+          ) : (
+            <span key={`m${anchor - i}${c}`} style={{ whiteSpace: "pre" }}>
+              {c}
+            </span>
+          ),
+        )}
+      </span>
     </span>
   );
 }
 
+export function CountUp(props: { value: number; format?: (n: number) => string; className?: string }) {
+  return <Odometer {...props} />;
+}
+
 /** Valor em reais com o "R$" e os centavos menores, como no painel do ERP. */
 export function Money({ value, className = "" }: { value: number; className?: string }) {
-  const [ref, display] = useCountUp(value);
-  const [int, cents] = display.toFixed(2).split(".");
+  const cents = Math.round((value % 1) * 100);
   return (
-    <span ref={ref} className={`font-display tabular-nums tracking-tight ${className}`}>
+    <span className={`inline-flex items-baseline font-display tracking-tight whitespace-nowrap ${className}`}>
       <span className="mr-1 text-[0.42em] font-medium text-muted">R$</span>
-      {Number(int).toLocaleString("pt-BR")}
-      <span className="text-[0.5em] font-medium text-faint">,{cents}</span>
+      <Odometer value={Math.floor(value)} />
+      <span className="text-[0.5em] font-medium text-faint">
+        ,<Odometer value={cents} format={(n) => String(Math.round(n)).padStart(2, "0")} />
+      </span>
     </span>
   );
 }

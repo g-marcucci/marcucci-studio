@@ -1,13 +1,12 @@
 "use client";
 
 import {
+  Activity,
   AlertTriangle,
   ArrowUpRight,
-  BarChart3,
   ChevronDown,
   LayoutGrid,
   Megaphone,
-  Package,
   Plug,
   Receipt,
   ShoppingCart,
@@ -178,15 +177,26 @@ function DotMatrix({ color, filled }: { color: string; filled: number }) {
   );
 }
 
+// Mesmos grupos da barra lateral do ERP (um recorte dos itens de cada um).
 const SIDEBAR = [
-  { icon: LayoutGrid, label: "Visão geral", active: true },
-  { icon: Receipt, label: "Pedidos" },
-  { icon: Users, label: "Clientes" },
-  { icon: ShoppingCart, label: "Carrinhos" },
-  { icon: Package, label: "Produtos" },
-  { icon: Megaphone, label: "Publicidade" },
-  { icon: BarChart3, label: "Relatórios" },
-  { icon: Plug, label: "Conexões" },
+  {
+    group: "Monitorar",
+    items: [
+      { icon: LayoutGrid, label: "Visão geral", active: true },
+      { icon: Activity, label: "Saúde da conta" },
+      { icon: Megaphone, label: "Publicidade" },
+    ],
+  },
+  {
+    group: "Vendas",
+    items: [
+      { icon: Receipt, label: "Pedidos" },
+      { icon: Users, label: "Clientes" },
+      { icon: ShoppingCart, label: "Carrinhos" },
+      { icon: Tag, label: "Anúncios" },
+    ],
+  },
+  { group: "Integrações", items: [{ icon: Plug, label: "Conexões" }] },
 ];
 
 export function DashboardDemo() {
@@ -194,7 +204,7 @@ export function DashboardDemo() {
   const d = DATA[period];
 
   return (
-    <div className="overflow-hidden rounded-[22px] border border-line-strong bg-surface-2 shadow-[0_40px_80px_-40px_rgb(0_0_0/0.45)]">
+    <div className="erp overflow-hidden rounded-[22px] border border-line-strong bg-surface-2 shadow-[0_40px_80px_-40px_rgb(0_0_0/0.45)]">
       {/* barra do navegador */}
       <div className="flex items-center gap-3 border-b border-line px-4 py-2.5">
         <div className="flex gap-1.5">
@@ -218,15 +228,20 @@ export function DashboardDemo() {
               <div className="text-[10px] text-faint">4 lojas conectadas</div>
             </div>
           </div>
-          {SIDEBAR.map(({ icon: Icon, label, active }) => (
-            <div
-              key={label}
-              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] ${
-                active ? "bg-accent-soft font-medium text-accent" : "text-muted"
-              }`}
-            >
-              <Icon className="size-3.5" />
-              {label}
+          {SIDEBAR.map(({ group, items }) => (
+            <div key={group} className="mb-2">
+              <div className="px-2.5 pt-1 pb-1 text-[10px] font-medium tracking-wide text-faint uppercase">{group}</div>
+              {items.map(({ icon: Icon, label, active }) => (
+                <div
+                  key={label}
+                  className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] ${
+                    active ? "bg-accent-soft font-medium text-accent" : "text-muted"
+                  }`}
+                >
+                  <Icon className="size-3.5" />
+                  {label}
+                </div>
+              ))}
             </div>
           ))}
         </aside>

@@ -12,11 +12,13 @@ export const site = {
     linkedin: "",
     instagram: "",
   },
+  // Links com "/" na frente funcionam também nas páginas de case; o contato
+  // existe em todas as páginas, então fica na própria página.
   nav: [
-    { href: "#inicio", label: "Início" },
-    { href: "#trabalhos", label: "Trabalhos" },
-    { href: "#servicos", label: "Serviços" },
-    { href: "#processo", label: "Processo" },
+    { href: "/#inicio", label: "Início" },
+    { href: "/#trabalhos", label: "Trabalhos" },
+    { href: "/#servicos", label: "Serviços" },
+    { href: "/#processo", label: "Processo" },
     { href: "#contato", label: "Contato" },
   ],
 };

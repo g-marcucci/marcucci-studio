@@ -105,14 +105,14 @@ function MiniTerminal() {
 }
 
 export function Nav() {
-  const [active, setActive] = useState("#inicio");
-  const links = site.nav.filter((n) => n.href !== "#inicio" && n.href !== "#contato");
+  const [active, setActive] = useState("inicio");
+  const links = site.nav.filter((n) => n.href !== "/#inicio" && n.href !== "#contato");
 
   useEffect(() => {
-    const ids = site.nav.map((n) => n.href.slice(1));
+    const ids = site.nav.map((n) => n.href.split("#")[1]);
     const obs = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActive(`#${e.target.id}`);
+        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
       },
       { rootMargin: "-45% 0px -50% 0px" },
     );
@@ -126,7 +126,7 @@ export function Nav() {
   return (
     <header className="sticky top-2 z-40 px-3 pt-3 md:top-3 md:px-6 md:pt-4">
       <div className="mx-auto flex max-w-[1232px] items-center gap-3 rounded-2xl border border-line bg-surface/75 p-2 pl-3 shadow-[var(--shadow)] backdrop-blur-xl">
-        <a href="#inicio" className="flex shrink-0 items-center gap-2.5" aria-label={site.name}>
+        <a href="/" className="flex shrink-0 items-center gap-2.5" aria-label={site.name}>
           <Avatar size={26} />
           <span className="font-mono text-[13px] tracking-tight text-fg">
             marcucci<span className="text-faint">/studio</span>
@@ -135,7 +135,7 @@ export function Nav() {
 
         <nav className="mx-auto hidden items-center gap-1 md:flex">
           {links.map((n, i) => {
-            const isActive = active === n.href;
+            const isActive = n.href.endsWith(`#${active}`);
             return (
               <a
                 key={n.href}

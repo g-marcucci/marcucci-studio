@@ -189,3 +189,57 @@ body {
   from { width: 0; }
   to { width: 100%; }
 }
+
+/* Telas recriadas do ERP: usam a fonte e as cores do próprio sistema (DM Sans,
+   fundo azulado, índigo e as cores de estado), nos dois temas. */
+.erp {
+  --bg: #f4f5fb;
+  --surface: #ffffff;
+  --surface-2: #f4f5fb;
+  --line: #e8e9f3;
+  --line-strong: #dbdded;
+  --fg: #161a26;
+  --muted: #5a6076;
+  --faint: #949bb0;
+  --accent: #6c4cf1;
+  --accent-soft: #efecfe;
+  --ok: #12a150;
+  --teal: #13b6a6;
+  --amber: #b7791f;
+  --nuvem: #d6453f;
+  --tiktok: #2f6fed;
+  --rep-red: #e5484d;
+  --rep-orange: #f76b15;
+  --rep-yellow: #f2c200;
+  --rep-lightgreen: #8ccf4d;
+  --rep-green: #12a150;
+  --shadow: 0 1px 2px rgb(22 26 44 / 0.05), 0 4px 16px rgb(22 26 44 / 0.06);
+  --font-funnel: var(--font-dm);
+  --font-onest: var(--font-dm);
+  font-family: var(--font-dm), ui-sans-serif, system-ui, sans-serif;
+}
+/* .erp-light / .erp-dark forçam um tema numa prévia, independente do tema da página. */
+[data-theme="dark"] .erp:not(.erp-light),
+.erp.erp-dark {
+  --bg: #0d0f15;
+  --surface: #151824;
+  --surface-2: #0d0f15;
+  --line: #262b3b;
+  --line-strong: #333a4d;
+  --fg: #e9ebf4;
+  --muted: #a6adc0;
+  --faint: #6f7690;
+  --accent: #907bff;
+  --accent-soft: #211f3a;
+  --ok: #39c672;
+  --teal: #2ed3c0;
+  --amber: #e0a63f;
+  --nuvem: #f0665f;
+  --tiktok: #5f93ff;
+  --rep-red: #f0665f;
+  --rep-orange: #ff8a3d;
+  --rep-yellow: #f2cc3d;
+  --rep-lightgreen: #a3dc62;
+  --rep-green: #39c672;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 20px rgb(0 0 0 / 0.35);
+}
