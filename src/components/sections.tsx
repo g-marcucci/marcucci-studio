@@ -17,7 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { contactLinks, projectHref, site } from "@/lib/site";
 import { Avatar } from "./avatar";
 import { DashboardDemo } from "./dashboard-demo";
@@ -27,57 +27,154 @@ function isExternal(href: string) {
   return href.startsWith("http");
 }
 
+const VERBS = ["organiza", "automatiza", "conecta", "acelera"];
+const GLYPHS = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+/** Verbo do título que troca sozinho, "decodificando" letra por letra. */
+function RotatingVerb() {
+  const [index, setIndex] = useState(0);
+  const [text, setText] = useState(VERBS[0]);
+
+  useEffect(() => {
+    const id = setInterval(() => setIndex((i) => (i + 1) % VERBS.length), 2800);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const target = VERBS[index];
+    let frame = 0;
+    const total = 14;
+    const id = setInterval(() => {
+      frame++;
+      const revealed = Math.floor((frame / total) * target.length);
+      setText(
+        [...target]
+          .map((c, i) => (i < revealed ? c : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]))
+          .join(""),
+      );
+      if (frame >= total) {
+        setText(target);
+        clearInterval(id);
+      }
+    }, 40);
+    return () => clearInterval(id);
+  }, [index]);
+
+  return (
+    <span className="flex w-fit items-baseline whitespace-nowrap">
+      <span className="font-pixel font-black tracking-[-0.02em] text-accent" aria-live="polite">
+        {text}
+      </span>
+      <span className="ml-1.5 inline-block h-[0.72em] w-[0.38em] translate-y-[0.06em] animate-pulse bg-[#d4ff4a]" aria-hidden />
+    </span>
+  );
+}
+
+const INCLUDED = [
+  "Interface desenhada para o seu fluxo",
+  "Front-end, back-end e banco de dados",
+  "Integrações com o que você já usa",
+  "Publicação, domínio e evolução",
+];
+
+// Etiquetas de "especificação" presas nas bordas do painel (só em telas grandes).
+const ANNOTATIONS = [
+  { label: "módulos sob medida", className: "-top-3 left-[3%]" },
+  { label: "dados atualizados sozinhos", className: "-top-3 left-[44%]" },
+  { label: "4 marketplaces via API", className: "top-[34%] -right-4" },
+  { label: "indicadores que você escolhe", className: "-bottom-3 left-[38%]" },
+];
+
 export function Hero() {
   const href = projectHref();
   return (
-    <section id="inicio" className="px-5 pt-14 md:px-14 md:pt-24">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="mx-auto max-w-4xl text-center"
-      >
-        <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 font-pixel text-[12px] font-bold tracking-[0.16em] text-muted uppercase">
-          <span className="live-dot size-1.5 rounded-full bg-ok" /> Agenda aberta
-        </span>
-        <h1 className="mt-6 font-display text-[44px] leading-[0.98] tracking-[-0.035em] text-fg sm:text-[60px] md:text-[80px]">
-          Software sob medida que roda o seu negócio.
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-[18px] leading-snug text-muted md:text-[22px]">
-          Sistemas, webapps, automações e sites. Aqui é a{" "}
-          <span className="inline-flex translate-y-[3px] items-center gap-1.5 rounded-full border border-line bg-surface py-0.5 pr-2.5 pl-1 align-baseline text-fg">
-            <Avatar size={20} />
-            <span className="text-[0.85em]">{site.name}</span>
+    <section id="inicio" className="relative px-5 pt-12 md:px-14 md:pt-20">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[760px] [mask-image:radial-gradient(70%_60%_at_30%_25%,black,transparent_80%)]"
+        style={{
+          backgroundImage:
+            "linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+        aria-hidden
+      />
+
+      <div className="relative grid gap-10 lg:grid-cols-[1.45fr_1fr] lg:items-end lg:gap-14">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 font-pixel text-[12px] font-bold tracking-[0.16em] text-muted uppercase">
+            <span className="live-dot size-1.5 rounded-full bg-ok" /> Agenda aberta
           </span>
-          , que faz tudo do zero, do banco de dados à última tela.
-        </p>
-        <div className="mt-9 flex flex-wrap justify-center gap-2.5">
-          <a
-            href="#trabalhos"
-            className="group flex items-center gap-2 rounded-full bg-fg px-5 py-2.5 text-[14px] font-medium text-bg transition-transform hover:-translate-y-0.5"
-          >
-            Ver trabalhos <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-          </a>
-          <a
-            href={href}
-            target={isExternal(href) ? "_blank" : undefined}
-            rel="noreferrer"
-            className="rounded-full border border-line-strong bg-surface px-5 py-2.5 text-[14px] font-medium text-fg transition-transform hover:-translate-y-0.5"
-          >
-            Começar um projeto
-          </a>
-        </div>
-      </motion.div>
+          <h1 className="mt-6 font-display text-[42px] leading-[1.02] tracking-[-0.035em] text-fg sm:text-[60px] md:text-[76px] xl:text-[84px]">
+            Software sob medida que <RotatingVerb /> o seu negócio.
+          </h1>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="lg:pb-3"
+        >
+          <p className="text-[17px] leading-snug text-muted md:text-[19px]">
+            Sistemas, webapps, automações e sites. Aqui é a{" "}
+            <span className="inline-flex translate-y-[3px] items-center gap-1.5 rounded-full border border-line bg-surface py-0.5 pr-2.5 pl-1 align-baseline text-fg">
+              <Avatar size={18} />
+              <span className="text-[0.85em]">{site.name}</span>
+            </span>
+            , que constrói tudo do zero, do banco de dados à última tela.
+          </p>
+          <ol className="mt-6 border-t border-line font-mono text-[12.5px]">
+            {INCLUDED.map((item, i) => (
+              <li key={item} className="flex items-center gap-3 border-b border-line py-2 text-fg">
+                <span className="text-accent">0{i + 1}</span>
+                {item}
+              </li>
+            ))}
+          </ol>
+          <div className="mt-6 flex flex-wrap gap-2.5">
+            <a
+              href="#trabalhos"
+              className="group flex items-center gap-2 rounded-full bg-fg px-5 py-2.5 text-[14px] font-medium text-bg transition-transform hover:-translate-y-0.5"
+            >
+              Ver trabalhos <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+            </a>
+            <a
+              href={href}
+              target={isExternal(href) ? "_blank" : undefined}
+              rel="noreferrer"
+              className="rounded-full border border-line-strong bg-surface px-5 py-2.5 text-[14px] font-medium text-fg transition-transform hover:-translate-y-0.5"
+            >
+              Começar um projeto
+            </a>
+          </div>
+        </motion.div>
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto mt-16 max-w-[1100px] md:mt-20"
+        className="relative mx-auto mt-16 md:mt-20"
       >
-        <div className="pointer-events-none absolute -inset-x-10 -top-10 bottom-1/2 -z-10 rounded-full bg-accent/20 blur-3xl" />
         <DashboardDemo />
-        <p className="mt-3 text-center text-[12px] text-faint">
+        {ANNOTATIONS.map((a, i) => (
+          <motion.span
+            key={a.label}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1 + i * 0.15, duration: 0.4 }}
+            className={`pointer-events-none absolute z-10 hidden items-center gap-1.5 rounded-md bg-fg px-2 py-1 font-mono text-[11px] whitespace-nowrap text-bg shadow-lg lg:flex ${a.className}`}
+          >
+            <span className="size-1.5 rounded-[2px] bg-[#d4ff4a]" />
+            <span className="text-bg/50">0{i + 1}</span>
+            {a.label}
+          </motion.span>
+        ))}
+        <p className="mt-5 text-center text-[12px] text-faint lg:mt-9">
           Painel do ERP multimarketplace, recriado aqui com dados fictícios. Troque o período ali em cima.
         </p>
       </motion.div>
