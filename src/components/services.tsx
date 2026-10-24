@@ -3,6 +3,7 @@
 import { Check, CreditCard, FileText, MessageCircle, Plus, Search, Zap } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { useT, type Text, type Tr } from "@/lib/i18n";
 import { Avatar } from "./avatar";
 import { CountUp, Reveal, SectionLabel } from "./ui";
 
@@ -30,15 +31,16 @@ function Module({
   horizontal = false,
 }: {
   index: string;
-  slug: string;
-  status: string;
-  title: string;
-  text: string;
-  tags: string[];
+  slug: Text;
+  status: Text;
+  title: Text;
+  text: Text;
+  tags: Text[];
   children: React.ReactNode;
   className?: string;
   horizontal?: boolean;
 }) {
+  const t = useT();
   return (
     <div
       className={`group relative flex h-full flex-col rounded-[20px] border border-line bg-surface shadow-[var(--shadow)] transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-line-strong ${className}`}
@@ -54,11 +56,11 @@ function Module({
 
       <div className="flex items-center justify-between border-b border-line px-4 py-2.5 font-mono text-[11px]">
         <span className="text-muted">
-          <span className="text-accent">{index}</span> <span className="text-faint">/</span> {slug}
+          <span className="text-accent">{index}</span> <span className="text-faint">/</span> {t(slug)}
         </span>
         <span className="flex items-center gap-1.5 text-faint">
           <span className="live-dot size-1.5 rounded-full bg-ok" />
-          {status}
+          {t(status)}
         </span>
       </div>
 
@@ -72,12 +74,12 @@ function Module({
           {children}
         </div>
         <div className={`flex flex-1 flex-col p-5 ${horizontal ? "lg:w-[340px] lg:shrink-0 lg:justify-end" : ""}`}>
-          <h3 className="font-display text-[26px] leading-tight tracking-tight text-fg">{title}</h3>
-          <p className="mt-1.5 text-[14px] leading-relaxed text-muted">{text}</p>
+          <h3 className="font-display text-[26px] leading-tight tracking-tight text-fg">{t(title)}</h3>
+          <p className="mt-1.5 text-[14px] leading-relaxed text-muted">{t(text)}</p>
           <div className="mt-4 flex flex-wrap gap-1.5">
-            {tags.map((t) => (
-              <span key={t} className="rounded-md border border-line bg-surface-2 px-2 py-0.5 font-mono text-[10.5px] text-muted">
-                {t}
+            {tags.map((tag) => (
+              <span key={t(tag)} className="rounded-md border border-line bg-surface-2 px-2 py-0.5 font-mono text-[10.5px] text-muted">
+                {t(tag)}
               </span>
             ))}
           </div>
@@ -102,7 +104,12 @@ function Window({ children, className = "", url }: { children: React.ReactNode; 
 }
 
 /* 01 · Sistemas: app com kanban sempre cheio e pedidos mudando de coluna */
-const COLS = ["Novo", "Separando", "Enviado", "Entregue"];
+const COLS: Tr[] = [
+  { en: "New", pt: "Novo", es: "Nuevo" },
+  { en: "Picking", pt: "Separando", es: "Preparando" },
+  { en: "Shipped", pt: "Enviado", es: "Enviado" },
+  { en: "Delivered", pt: "Entregue", es: "Entregado" },
+];
 const GHOSTS = [2, 1, 2, 1];
 const ORDERS = [
   { id: "#4821", color: "var(--ml)", value: "189,90" },
@@ -111,6 +118,7 @@ const ORDERS = [
 ];
 
 function SystemsMini() {
+  const t = useT();
   const tick = useTicker(1500);
   return (
     <Window className="flex h-full flex-col">
@@ -129,9 +137,9 @@ function SystemsMini() {
         </div>
         <div className="flex min-w-0 flex-1 flex-col p-2.5">
           <div className="mb-2.5 flex items-center gap-2">
-            <span className="text-[11px] font-medium text-fg">Pedidos</span>
+            <span className="text-[11px] font-medium text-fg">{t({ en: "Orders", pt: "Pedidos", es: "Pedidos" })}</span>
             <span className="flex flex-1 items-center gap-1 rounded-md border border-line px-1.5 py-0.5 text-[9px] text-faint">
-              <Search className="size-2.5" /> buscar pedido, cliente…
+              <Search className="size-2.5" /> {t({ en: "search order, customer…", pt: "buscar pedido, cliente…", es: "buscar pedido, cliente…" })}
             </span>
             <span className="flex items-center gap-0.5 rounded-md bg-fg px-1.5 py-0.5 text-[9px] text-bg">
               <Plus className="size-2.5" /> Novo
@@ -139,9 +147,9 @@ function SystemsMini() {
           </div>
           <div className="grid min-h-0 flex-1 grid-cols-4 gap-1.5">
             {COLS.map((c, ci) => (
-              <div key={c} className="overflow-hidden rounded-lg bg-surface-2 p-1.5">
+              <div key={c.en} className="overflow-hidden rounded-lg bg-surface-2 p-1.5">
                 <div className="mb-1.5 flex items-center justify-between text-[9.5px] text-faint">
-                  {c}
+                  {t(c)}
                   <span className="font-mono">{GHOSTS[ci] + ORDERS.filter((_, oi) => Math.min((tick + oi * 2) % 6, 3) === ci).length}</span>
                 </div>
                 <div className="space-y-1">
@@ -179,9 +187,9 @@ function SystemsMini() {
 
 /* 02 · Automações: gatilho, etapas e log das execuções */
 const STEPS = [
-  { icon: FileText, label: "Emite a NF-e" },
-  { icon: CreditCard, label: "Baixa no financeiro" },
-  { icon: MessageCircle, label: "Avisa no WhatsApp" },
+  { icon: FileText, label: { en: "Issues the invoice", pt: "Emite a NF-e", es: "Emite la factura" } },
+  { icon: CreditCard, label: { en: "Updates finance", pt: "Baixa no financeiro", es: "Registra en finanzas" } },
+  { icon: MessageCircle, label: { en: "Notifies on WhatsApp", pt: "Avisa no WhatsApp", es: "Avisa por WhatsApp" } },
 ];
 
 function clock(run: number) {
@@ -190,6 +198,7 @@ function clock(run: number) {
 }
 
 function AutomationMini() {
+  const t = useT();
   const tick = useTicker(800);
   const step = tick % (STEPS.length + 2);
   const run = 4821 + Math.floor(tick / (STEPS.length + 2));
@@ -197,20 +206,20 @@ function AutomationMini() {
     <div className="flex h-full flex-col gap-2">
       <div className="flex items-center gap-2 rounded-lg border border-dashed border-accent/60 bg-accent-soft px-2.5 py-1.5 text-[11px] text-fg">
         <Zap className="size-3.5 text-accent" />
-        <span className="text-muted">quando</span> pedido for pago
+        <span className="text-muted">{t({ en: "when", pt: "quando", es: "cuando" })}</span> {t({ en: "an order is paid", pt: "pedido for pago", es: "se paga un pedido" })}
       </div>
       {STEPS.map(({ icon: Icon, label }, i) => {
         const done = step > i + 1;
         const active = step === i + 1;
         return (
           <div
-            key={label}
+            key={label.en}
             className={`ml-3 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[11px] transition-colors duration-300 ${
               active ? "border-accent bg-surface text-fg" : "border-line bg-surface text-muted"
             }`}
           >
             <Icon className="size-3.5" />
-            {label}
+            {t(label)}
             <span className="ml-auto">
               {done ? <Check className="size-3.5 text-ok" /> : active ? <span className="live-dot block size-1.5 rounded-full bg-ok" /> : null}
             </span>
@@ -220,7 +229,7 @@ function AutomationMini() {
       <div className="mt-auto space-y-0.5 rounded-lg bg-[#121016] px-2.5 py-2 font-mono text-[9.5px] leading-relaxed">
         {[0, 1, 2].map((k) => (
           <div key={run - k} className={k === 0 ? "text-white/80" : "text-white/35"}>
-            <span style={{ color: LIME }}>✓</span> {clock(run - k)} pedido #{run - k} · 3 etapas
+            <span style={{ color: LIME }}>✓</span> {clock(run - k)} {t({ en: "order", pt: "pedido", es: "pedido" })} #{run - k} · {t({ en: "3 steps", pt: "3 etapas", es: "3 pasos" })}
           </div>
         ))}
       </div>
@@ -229,16 +238,21 @@ function AutomationMini() {
 }
 
 /* 03 · Webapps: o mesmo app no desktop e no celular */
-const CHECKS = ["Cadastro", "Pagamento via PIX", "Agendamento"];
+const CHECKS: Tr[] = [
+  { en: "Sign-up", pt: "Cadastro", es: "Registro" },
+  { en: "Payment via PIX", pt: "Pagamento via PIX", es: "Pago vía PIX" },
+  { en: "Booking", pt: "Agendamento", es: "Reserva" },
+];
 
 function WebappMini() {
+  const t = useT();
   const tick = useTicker(1000);
   const done = tick % (CHECKS.length + 2);
   return (
     <div className="relative h-full min-h-[200px]">
-      <Window url="app.suaempresa.com" className="absolute top-0 left-0 w-[78%]">
+      <Window url={t({ en: "app.yourcompany.com", pt: "app.suaempresa.com", es: "app.tuempresa.com" })} className="absolute top-0 left-0 w-[78%]">
         <div className="space-y-1.5 p-2.5">
-          <div className="text-[10px] font-medium text-fg">Agendamentos de hoje</div>
+          <div className="text-[10px] font-medium text-fg">{t({ en: "Today's bookings", pt: "Agendamentos de hoje", es: "Turnos de hoy" })}</div>
           {["09:00 · Ana", "10:30 · Bruno", "14:00 · Carla", "16:15 · Diego"].map((r, i) => (
             <div key={r} className="flex items-center justify-between rounded-md border border-line px-2 py-1 text-[9.5px] text-muted">
               {r}
@@ -247,7 +261,7 @@ function WebappMini() {
                   i < done - 1 ? "bg-[color-mix(in_oklab,var(--ok)_14%,transparent)] text-ok" : "bg-surface-2 text-faint"
                 }`}
               >
-                {i < done - 1 ? "confirmado" : "pendente"}
+                {i < done - 1 ? t({ en: "confirmed", pt: "confirmado", es: "confirmado" }) : t({ en: "pending", pt: "pendente", es: "pendiente" })}
               </span>
             </div>
           ))}
@@ -255,11 +269,11 @@ function WebappMini() {
       </Window>
       <div className="absolute right-0 bottom-0 w-[44%] max-w-[150px] rounded-[16px] border border-line-strong bg-surface p-2 shadow-[var(--shadow)]">
         <div className="mx-auto mb-2 h-1 w-8 rounded-full bg-line-strong" />
-        <div className="text-[9px] text-faint">Olá, Ana</div>
-        <div className="font-display text-[12px] text-fg">Seu horário</div>
+        <div className="text-[9px] text-faint">{t({ en: "Hi, Ana", pt: "Olá, Ana", es: "Hola, Ana" })}</div>
+        <div className="font-display text-[12px] text-fg">{t({ en: "Your booking", pt: "Seu horário", es: "Tu turno" })}</div>
         <div className="mt-1.5 space-y-1">
           {CHECKS.map((c, i) => (
-            <div key={c} className="flex items-center gap-1.5 text-[9px] text-muted">
+            <div key={c.en} className="flex items-center gap-1.5 text-[9px] text-muted">
               <span
                 className={`grid size-3 place-items-center rounded-full border transition-colors ${
                   done > i ? "border-ok bg-ok text-white" : "border-line-strong"
@@ -267,11 +281,11 @@ function WebappMini() {
               >
                 {done > i && <Check className="size-2" />}
               </span>
-              {c}
+              {t(c)}
             </div>
           ))}
         </div>
-        <div className="mt-2 rounded-md bg-accent py-1 text-center text-[9px] text-white">Confirmar</div>
+        <div className="mt-2 rounded-md bg-accent py-1 text-center text-[9px] text-white">{t({ en: "Confirm", pt: "Confirmar", es: "Confirmar" })}</div>
       </div>
     </div>
   );
@@ -336,11 +350,12 @@ function SiteMini() {
 const BARS = [5, 7, 6, 8, 7, 9, 8, 10, 9, 11, 12, 14];
 
 function DashMini() {
+  const t = useT();
   return (
     <div className="flex h-full min-h-[200px] flex-col">
       <div className="flex items-end justify-between">
         <div>
-          <div className="text-[10.5px] text-faint">Faturamento · 12 semanas</div>
+          <div className="text-[10.5px] text-faint">{t({ en: "Revenue · 12 weeks", pt: "Faturamento · 12 semanas", es: "Facturación · 12 semanas" })}</div>
           <div className="font-display text-[22px] leading-tight tracking-tight text-fg">
             R$ <CountUp value={84210} />
           </div>
@@ -349,7 +364,7 @@ function DashMini() {
       </div>
       <div className="relative mt-3 flex flex-1 items-end gap-1.5">
         <div className="pointer-events-none absolute inset-x-0 top-[22%] border-t border-dashed border-accent/70">
-          <span className="absolute -top-2 right-0 bg-surface px-1 font-mono text-[8.5px] text-accent">meta</span>
+          <span className="absolute -top-2 right-0 bg-surface px-1 font-mono text-[8.5px] text-accent">{t({ en: "goal", pt: "meta", es: "meta" })}</span>
         </div>
         {BARS.map((h, i) => (
           <div key={i} className="flex flex-1 flex-col-reverse gap-[2px]">
@@ -373,14 +388,15 @@ function DashMini() {
 
 /* 06 · Integrações: hub com o mascote no centro e dados fluindo pelas linhas */
 // Edite à vontade com as ferramentas que você mais integra.
-const LEFT = ["Mercado Livre", "Shopee", "TikTok Shop", "Nuvemshop", "Gateways de pagamento", "PIX"];
-const RIGHT = ["WhatsApp", "E-mail", "Planilhas", "ERPs", "APIs de IA", "Webhooks"];
+const LEFT: Text[] = ["Mercado Livre", "Shopee", "TikTok Shop", "Nuvemshop", { en: "Payment gateways", pt: "Gateways de pagamento", es: "Pasarelas de pago" }, "PIX"];
+const RIGHT: Text[] = ["WhatsApp", "E-mail", { en: "Spreadsheets", pt: "Planilhas", es: "Hojas de cálculo" }, "ERPs", { en: "AI APIs", pt: "APIs de IA", es: "APIs de IA" }, "Webhooks"];
 
 // Cada etiqueta fica centrada na sua faixa; as colunas laterais ocupam 1/3.1 da largura.
 const rowY = (i: number) => ((i + 0.5) * 100) / LEFT.length;
 const EDGE = (1 / 3.1) * 100;
 
 function IntegrationsMini() {
+  const t = useT();
   return (
     <div className="relative h-full min-h-[260px]">
       <svg className="pointer-events-none absolute inset-0 hidden size-full md:block" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
@@ -407,18 +423,18 @@ function IntegrationsMini() {
       <div className="relative grid h-full grid-cols-2 gap-x-3 gap-y-1.5 md:grid-cols-[1fr_1.1fr_1fr] md:gap-0">
         <div className="contents md:flex md:flex-col">
           {LEFT.map((n) => (
-            <Chip key={n} label={n} side="left" />
+            <Chip key={typeof n === "string" ? n : n.en} label={n} side="left" />
           ))}
         </div>
         <div className="col-span-2 row-start-1 flex items-center justify-center py-3 md:col-span-1 md:row-auto md:px-6">
           <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-accent/50 bg-surface px-4 py-3 shadow-[0_0_0_6px_var(--accent-soft)]">
             <Avatar size={34} />
-            <span className="font-mono text-[10.5px] text-fg">seu sistema</span>
+            <span className="font-mono text-[10.5px] text-fg">{t({ en: "your system", pt: "seu sistema", es: "tu sistema" })}</span>
           </div>
         </div>
         <div className="contents md:flex md:flex-col">
           {RIGHT.map((n) => (
-            <Chip key={n} label={n} side="right" />
+            <Chip key={typeof n === "string" ? n : n.en} label={n} side="right" />
           ))}
         </div>
       </div>
@@ -426,59 +442,143 @@ function IntegrationsMini() {
   );
 }
 
-function Chip({ label, side }: { label: string; side: "left" | "right" }) {
+function Chip({ label, side }: { label: Text; side: "left" | "right" }) {
+  const t = useT();
   return (
     <span className={`flex md:flex-1 md:items-center ${side === "left" ? "md:justify-end" : "md:justify-start"}`}>
       <span className="relative z-[1] w-fit max-w-full truncate rounded-full border border-line bg-surface px-2.5 py-1 text-[11.5px] text-muted shadow-sm">
-        {label}
+        {t(label)}
       </span>
     </span>
   );
 }
 
 export function Services() {
+  const t = useT();
   return (
-    <section id="servicos" className="border-t border-line px-5 py-24 md:px-14 md:py-32">
+    <section id="services" className="border-t border-line px-5 py-24 md:px-14 md:py-32">
       <Reveal>
-        <SectionLabel index="02">Serviços</SectionLabel>
+        <SectionLabel index="02">{t({ en: "Services", pt: "Serviços", es: "Servicios" })}</SectionLabel>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
           <h2 className="max-w-3xl font-display text-[44px] leading-[0.98] tracking-[-0.03em] text-fg md:text-[72px]">
-            O que eu construo. <span className="text-faint">Do processo ao produto.</span>
+            {t({ en: "What I build.", pt: "O que eu construo.", es: "Lo que construyo." })}{" "}
+            <span className="text-faint">{t({ en: "From process to product.", pt: "Do processo ao produto.", es: "Del proceso al producto." })}</span>
           </h2>
           <p className="max-w-xs text-[14px] leading-relaxed text-muted md:text-right">
-            Cuido da interface e de tudo que roda por trás dela. Você fala direto com quem desenha e programa.
+            {t({
+              en: "I handle the interface and everything that runs behind it. You talk directly to the person who designs and codes.",
+              pt: "Cuido da interface e de tudo que roda por trás dela. Você fala direto com quem desenha e programa.",
+              es: "Me ocupo de la interfaz y de todo lo que corre detrás. Hablas directo con quien diseña y programa.",
+            })}
           </p>
         </div>
       </Reveal>
 
       <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Reveal className="md:col-span-2">
-          <Module index="01" slug="sistemas" status="4 colunas · ao vivo" title="Sistemas e ERPs" text="Plataformas sob medida para o seu processo, não o contrário: pedidos, estoque, financeiro e o que mais o negócio precisar." tags={["painel", "permissões", "relatórios", "integrações"]}>
+          <Module
+            index="01"
+            slug={{ en: "systems", pt: "sistemas", es: "sistemas" }}
+            status={{ en: "4 columns · live", pt: "4 colunas · ao vivo", es: "4 columnas · en vivo" }}
+            title={{ en: "Systems and ERPs", pt: "Sistemas e ERPs", es: "Sistemas y ERPs" }}
+            text={{
+              en: "Custom platforms built around your process, not the other way around: orders, stock, finance and whatever else the business needs.",
+              pt: "Plataformas sob medida para o seu processo, não o contrário: pedidos, estoque, financeiro e o que mais o negócio precisar.",
+              es: "Plataformas a medida de tu proceso, no al revés: pedidos, stock, finanzas y lo que el negocio necesite.",
+            }}
+            tags={[
+              { en: "dashboard", pt: "painel", es: "panel" },
+              { en: "permissions", pt: "permissões", es: "permisos" },
+              { en: "reports", pt: "relatórios", es: "informes" },
+              { en: "integrations", pt: "integrações", es: "integraciones" },
+            ]}
+          >
             <SystemsMini />
           </Module>
         </Reveal>
         <Reveal delay={0.05}>
-          <Module index="02" slug="automações" status="rodando" title="Automações" text="Tarefas repetitivas que passam a rodar sozinhas, com registro de cada execução." tags={["gatilhos", "filas", "alertas", "logs"]}>
+          <Module
+            index="02"
+            slug={{ en: "automations", pt: "automações", es: "automatizaciones" }}
+            status={{ en: "running", pt: "rodando", es: "en marcha" }}
+            title={{ en: "Automations", pt: "Automações", es: "Automatizaciones" }}
+            text={{
+              en: "Repetitive tasks that start running on their own, with a log of every run.",
+              pt: "Tarefas repetitivas que passam a rodar sozinhas, com registro de cada execução.",
+              es: "Tareas repetitivas que pasan a correr solas, con registro de cada ejecución.",
+            }}
+            tags={[
+              { en: "triggers", pt: "gatilhos", es: "disparadores" },
+              { en: "queues", pt: "filas", es: "colas" },
+              { en: "alerts", pt: "alertas", es: "alertas" },
+              "logs",
+            ]}
+          >
             <AutomationMini />
           </Module>
         </Reveal>
         <Reveal>
-          <Module index="03" slug="webapps" status="desktop + mobile" title="Webapps" text="Aplicações que abrem no navegador ou no celular, com login, pagamentos e fluxos curtos." tags={["login", "pagamentos", "mobile"]}>
+          <Module
+            index="03"
+            slug="webapps"
+            status="desktop + mobile"
+            title={{ en: "Web apps", pt: "Webapps", es: "Web apps" }}
+            text={{
+              en: "Apps that open in the browser or on the phone, with login, payments and short flows.",
+              pt: "Aplicações que abrem no navegador ou no celular, com login, pagamentos e fluxos curtos.",
+              es: "Aplicaciones que abren en el navegador o en el celular, con login, pagos y flujos cortos.",
+            }}
+            tags={["login", { en: "payments", pt: "pagamentos", es: "pagos" }, "mobile"]}
+          >
             <WebappMini />
           </Module>
         </Reveal>
         <Reveal delay={0.05}>
-          <Module index="04" slug="sites" status="responsivo" title="Sites e landing pages" text="Sites institucionais e páginas de venda criados do zero, rápidos em qualquer tela." tags={["institucional", "landing page", "SEO"]}>
+          <Module
+            index="04"
+            slug={{ en: "websites", pt: "sites", es: "sitios" }}
+            status={{ en: "responsive", pt: "responsivo", es: "responsivo" }}
+            title={{ en: "Websites and landing pages", pt: "Sites e landing pages", es: "Sitios y landing pages" }}
+            text={{
+              en: "Company websites and sales pages built from scratch, fast on any screen.",
+              pt: "Sites institucionais e páginas de venda criados do zero, rápidos em qualquer tela.",
+              es: "Sitios institucionales y páginas de venta creados desde cero, rápidos en cualquier pantalla.",
+            }}
+            tags={[{ en: "company site", pt: "institucional", es: "institucional" }, "landing page", "SEO"]}
+          >
             <SiteMini />
           </Module>
         </Reveal>
         <Reveal delay={0.1}>
-          <Module index="05" slug="dashboards" status="atualizado agora" title="Dashboards" text="Os números do negócio em uma tela, atualizados sozinhos e fáceis de ler." tags={["KPIs", "gráficos", "metas"]}>
+          <Module
+            index="05"
+            slug="dashboards"
+            status={{ en: "updated just now", pt: "atualizado agora", es: "actualizado ahora" }}
+            title="Dashboards"
+            text={{
+              en: "The business numbers on one screen, updated automatically and easy to read.",
+              pt: "Os números do negócio em uma tela, atualizados sozinhos e fáceis de ler.",
+              es: "Los números del negocio en una pantalla, actualizados solos y fáciles de leer.",
+            }}
+            tags={["KPIs", { en: "charts", pt: "gráficos", es: "gráficos" }, { en: "goals", pt: "metas", es: "metas" }]}
+          >
             <DashMini />
           </Module>
         </Reveal>
         <Reveal className="md:col-span-2 lg:col-span-3">
-          <Module index="06" slug="integrações" status="12 conexões" title="Integrações" text="Conecto o sistema ao que você já usa: marketplaces, pagamentos, ERPs, planilhas, WhatsApp e IA. Se tem API, dá para conversar." tags={["APIs", "webhooks", "sincronização"]} horizontal>
+          <Module
+            index="06"
+            slug={{ en: "integrations", pt: "integrações", es: "integraciones" }}
+            status={{ en: "12 connections", pt: "12 conexões", es: "12 conexiones" }}
+            title={{ en: "Integrations", pt: "Integrações", es: "Integraciones" }}
+            text={{
+              en: "I connect the system to what you already use: marketplaces, payments, ERPs, spreadsheets, WhatsApp and AI. If it has an API, it can talk.",
+              pt: "Conecto o sistema ao que você já usa: marketplaces, pagamentos, ERPs, planilhas, WhatsApp e IA. Se tem API, dá para conversar.",
+              es: "Conecto el sistema a lo que ya usas: marketplaces, pagos, ERPs, hojas de cálculo, WhatsApp e IA. Si tiene API, se puede conectar.",
+            }}
+            tags={["APIs", "webhooks", { en: "sync", pt: "sincronização", es: "sincronización" }]}
+            horizontal
+          >
             <IntegrationsMini />
           </Module>
         </Reveal>

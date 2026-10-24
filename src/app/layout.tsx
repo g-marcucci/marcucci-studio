@@ -9,17 +9,10 @@ const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrai
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm" });
 const doto = Doto({ subsets: ["latin"], weight: ["700", "900"], variable: "--font-doto" });
 
+// Título e descrição vêm de cada página (por idioma); aqui só o endereço base.
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: `${site.name} · Sistemas, webapps, automações e sites`,
-  description:
-    "Software sob medida que roda o seu negócio: sistemas e ERPs, webapps, automações e sites, feitos do zero, do banco de dados à última tela.",
-  openGraph: {
-    title: site.name,
-    description: site.tagline,
-    locale: "pt_BR",
-    type: "website",
-  },
+  title: site.name,
 };
 
 export const viewport: Viewport = {
@@ -32,7 +25,7 @@ const themeScript = `(function(){try{var t=localStorage.getItem('theme');if(!t){
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      lang="pt-BR"
+      lang="en"
       suppressHydrationWarning
       className={`${funnel.variable} ${onest.variable} ${jetbrains.variable} ${doto.variable} ${dmSans.variable}`}
     >

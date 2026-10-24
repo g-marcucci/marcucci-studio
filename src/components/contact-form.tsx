@@ -2,13 +2,26 @@
 
 import { ArrowRight, Check, Mail, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import { useT, type Tr } from "@/lib/i18n";
 import { site, whatsappHref } from "@/lib/site";
 
 // O formulário não envia nada para servidor: só monta a mensagem e abre o
-// WhatsApp (ou o e-mail) de quem está visitando, já com o texto pronto.
+// WhatsApp (ou o e-mail) de quem está visitando, já com o texto pronto, no
+// idioma da página.
 
-const TYPES = ["Sistema / ERP", "Webapp", "Automação", "Site ou landing page", "Integração", "Outro"];
-const DEADLINES = ["O quanto antes", "Em 1 a 3 meses", "Sem pressa"];
+const TYPES: Tr[] = [
+  { en: "System / ERP", pt: "Sistema / ERP", es: "Sistema / ERP" },
+  { en: "Web app", pt: "Webapp", es: "Web app" },
+  { en: "Automation", pt: "Automação", es: "Automatización" },
+  { en: "Website or landing page", pt: "Site ou landing page", es: "Sitio o landing page" },
+  { en: "Integration", pt: "Integração", es: "Integración" },
+  { en: "Other", pt: "Outro", es: "Otro" },
+];
+const DEADLINES: Tr[] = [
+  { en: "As soon as possible", pt: "O quanto antes", es: "Lo antes posible" },
+  { en: "In 1 to 3 months", pt: "Em 1 a 3 meses", es: "En 1 a 3 meses" },
+  { en: "No rush", pt: "Sem pressa", es: "Sin prisa" },
+];
 
 const LIME = "#d4ff4a";
 
@@ -33,30 +46,35 @@ const field =
   "w-full rounded-xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-[14.5px] text-white placeholder:text-white/35 outline-none transition-colors focus:border-[#d4ff4a]/70 focus:bg-white/[0.1]";
 
 export function ContactForm() {
+  const t = useT();
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
-  const [types, setTypes] = useState<string[]>([]);
-  const [deadline, setDeadline] = useState("");
+  const [types, setTypes] = useState<Tr[]>([]);
+  const [deadline, setDeadline] = useState<Tr | null>(null);
   const [about, setAbout] = useState("");
   const [tried, setTried] = useState(false);
 
   const missing = { name: !name.trim(), about: !about.trim() };
   const valid = !missing.name && !missing.about;
 
-  const toggleType = (t: string) => setTypes((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
+  const toggleType = (type: Tr) => setTypes((cur) => (cur.includes(type) ? cur.filter((x) => x !== type) : [...cur, type]));
 
   /** A mensagem que chega; `bold` usa a marcação de negrito do WhatsApp. */
   const message = (bold: boolean) => {
-    const b = (s: string) => (bold ? `*${s}*` : s);
+    const b = (s: Tr) => (bold ? `*${t(s)}*` : t(s));
     const lines: (string | false)[] = [
-      "Olá, Gabriel! Vim pelo site da Marcucci Studio.",
+      t({
+        en: "Hi Gabriel! I found you through the Marcucci Studio website.",
+        pt: "Olá, Gabriel! Vim pelo site da Marcucci Studio.",
+        es: "¡Hola, Gabriel! Vine por el sitio de Marcucci Studio.",
+      }),
       "",
-      `${b("Nome:")} ${name.trim()}`,
-      company.trim() ? `${b("Empresa:")} ${company.trim()}` : false,
-      types.length > 0 ? `${b("Projeto:")} ${types.join(", ")}` : false,
-      deadline ? `${b("Prazo:")} ${deadline}` : false,
+      `${b({ en: "Name:", pt: "Nome:", es: "Nombre:" })} ${name.trim()}`,
+      company.trim() ? `${b({ en: "Company:", pt: "Empresa:", es: "Empresa:" })} ${company.trim()}` : false,
+      types.length > 0 ? `${b({ en: "Project:", pt: "Projeto:", es: "Proyecto:" })} ${types.map(t).join(", ")}` : false,
+      deadline ? `${b({ en: "Timeline:", pt: "Prazo:", es: "Plazo:" })} ${t(deadline)}` : false,
       "",
-      b("Sobre o projeto:"),
+      b({ en: "About the project:", pt: "Sobre o projeto:", es: "Sobre el proyecto:" }),
       about.trim(),
     ];
     return lines.filter((l): l is string => l !== false).join("\n");
@@ -65,12 +83,19 @@ export function ContactForm() {
   const send = (via: "whatsapp" | "email") => {
     setTried(true);
     if (!valid) return;
+    const subject = `${t({ en: "Project", pt: "Projeto", es: "Proyecto" })} · ${name.trim()}`;
     const url =
       via === "whatsapp"
         ? whatsappHref(message(true))
-        : `mailto:${site.contact.email}?subject=${encodeURIComponent(`Projeto · ${name.trim()}`)}&body=${encodeURIComponent(message(false))}`;
+        : `mailto:${site.contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message(false))}`;
     window.open(url, via === "whatsapp" ? "_blank" : "_self", "noopener");
   };
+
+  const missingText = missing.name && missing.about
+    ? t({ en: "your name and the project", pt: "seu nome e o projeto", es: "tu nombre y el proyecto" })
+    : missing.name
+      ? t({ en: "your name", pt: "seu nome", es: "tu nombre" })
+      : t({ en: "a bit about the project", pt: "um pouco do projeto", es: "un poco del proyecto" });
 
   return (
     <form
@@ -83,20 +108,21 @@ export function ContactForm() {
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-[13px] text-white/80">Seu nome</span>
+          <span className="mb-1.5 block text-[13px] text-white/80">{t({ en: "Your name", pt: "Seu nome", es: "Tu nombre" })}</span>
           <input
             className={`${field} ${tried && missing.name ? "border-[#ff8a8a]" : ""}`}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
             autoComplete="name"
-            placeholder="Como posso te chamar?"
+            placeholder={t({ en: "What should I call you?", pt: "Como posso te chamar?", es: "¿Cómo te llamo?" })}
             aria-invalid={tried && missing.name}
           />
         </label>
         <label className="block">
           <span className="mb-1.5 block text-[13px] text-white/80">
-            Empresa <span className="text-white/40">(opcional)</span>
+            {t({ en: "Company", pt: "Empresa", es: "Empresa" })}{" "}
+            <span className="text-white/40">{t({ en: "(optional)", pt: "(opcional)", es: "(opcional)" })}</span>
           </span>
           <input
             className={field}
@@ -104,51 +130,60 @@ export function ContactForm() {
             onChange={(e) => setCompany(e.target.value)}
             maxLength={80}
             autoComplete="organization"
-            placeholder="Nome da empresa ou loja"
+            placeholder={t({ en: "Company or store name", pt: "Nome da empresa ou loja", es: "Nombre de la empresa o tienda" })}
           />
         </label>
       </div>
 
       <fieldset className="mt-5">
         <legend className="mb-2 text-[13px] text-white/80">
-          O que você precisa? <span className="text-white/40">(pode marcar mais de um)</span>
+          {t({ en: "What do you need?", pt: "O que você precisa?", es: "¿Qué necesitas?" })}{" "}
+          <span className="text-white/40">
+            {t({ en: "(pick as many as you like)", pt: "(pode marcar mais de um)", es: "(puedes marcar varios)" })}
+          </span>
         </legend>
         <div className="flex flex-wrap gap-2">
-          {TYPES.map((t) => (
-            <Chip key={t} on={types.includes(t)} onClick={() => toggleType(t)}>
-              {t}
+          {TYPES.map((type) => (
+            <Chip key={type.en} on={types.includes(type)} onClick={() => toggleType(type)}>
+              {t(type)}
             </Chip>
           ))}
         </div>
       </fieldset>
 
       <fieldset className="mt-5">
-        <legend className="mb-2 text-[13px] text-white/80">Para quando?</legend>
+        <legend className="mb-2 text-[13px] text-white/80">{t({ en: "When do you need it?", pt: "Para quando?", es: "¿Para cuándo?" })}</legend>
         <div className="flex flex-wrap gap-2">
           {DEADLINES.map((d) => (
-            <Chip key={d} on={deadline === d} onClick={() => setDeadline(deadline === d ? "" : d)}>
-              {d}
+            <Chip key={d.en} on={deadline === d} onClick={() => setDeadline(deadline === d ? null : d)}>
+              {t(d)}
             </Chip>
           ))}
         </div>
       </fieldset>
 
       <label className="mt-5 block">
-        <span className="mb-1.5 block text-[13px] text-white/80">Conta um pouco do projeto</span>
+        <span className="mb-1.5 block text-[13px] text-white/80">
+          {t({ en: "Tell me a bit about the project", pt: "Conta um pouco do projeto", es: "Cuéntame un poco del proyecto" })}
+        </span>
         <textarea
           className={`${field} min-h-[110px] resize-y ${tried && missing.about ? "border-[#ff8a8a]" : ""}`}
           value={about}
           onChange={(e) => setAbout(e.target.value)}
           maxLength={1200}
-          placeholder="O que precisa funcionar, como é feito hoje, o que mais incomoda…"
+          placeholder={t({
+            en: "What needs to work, how it's done today, what bothers you most…",
+            pt: "O que precisa funcionar, como é feito hoje, o que mais incomoda…",
+            es: "Qué tiene que funcionar, cómo se hace hoy, qué es lo que más molesta…",
+          })}
           aria-invalid={tried && missing.about}
         />
       </label>
 
       {tried && !valid && (
         <p className="mt-3 text-[13px] text-[#ffb3b3]" role="alert">
-          Preencha {missing.name && missing.about ? "seu nome e o projeto" : missing.name ? "seu nome" : "um pouco do projeto"}{" "}
-          para eu entender o contexto.
+          {t({ en: "Please add", pt: "Preencha", es: "Completa" })} {missingText}{" "}
+          {t({ en: "so I can understand the context.", pt: "para eu entender o contexto.", es: "para entender el contexto." })}
         </p>
       )}
 
@@ -159,7 +194,7 @@ export function ContactForm() {
           style={{ background: LIME }}
         >
           <MessageCircle className="size-4" />
-          Enviar pelo WhatsApp
+          {t({ en: "Send via WhatsApp", pt: "Enviar pelo WhatsApp", es: "Enviar por WhatsApp" })}
           <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
         </button>
         <button
@@ -167,11 +202,15 @@ export function ContactForm() {
           onClick={() => send("email")}
           className="flex items-center gap-1.5 text-[14px] text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
         >
-          <Mail className="size-4" /> ou mandar por e-mail
+          <Mail className="size-4" /> {t({ en: "or send by email", pt: "ou mandar por e-mail", es: "o enviar por e-mail" })}
         </button>
       </div>
       <p className="mt-4 text-[12px] text-white/45">
-        Abre o seu WhatsApp ou e-mail com a mensagem pronta para você revisar. Nada fica salvo neste site.
+        {t({
+          en: "Opens your WhatsApp or email with the message ready for you to review. Nothing is stored on this site.",
+          pt: "Abre o seu WhatsApp ou e-mail com a mensagem pronta para você revisar. Nada fica salvo neste site.",
+          es: "Abre tu WhatsApp o e-mail con el mensaje listo para que lo revises. Nada se guarda en este sitio.",
+        })}
       </p>
     </form>
   );

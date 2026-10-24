@@ -18,11 +18,24 @@ O site é exportado como estático (`output: "export"` em `next.config.ts`). Par
 2. Compacte o conteúdo de `out/` (incluindo o `.htaccess`) num .zip.
 3. No hPanel, abra o Gerenciador de Arquivos de marcucci.studio, envie o .zip para `public_html` e extraia, substituindo os arquivos.
 
-O `.htaccess` (em `public/`) cuida da página 404, do cache e do redirecionamento das páginas `/work/*` do site anterior.
+O `.htaccess` (em `public/`) cuida da página 404, do cache e dos redirecionamentos (páginas `/work/*` do site anterior e a URL antiga do case em português).
+
+## Idiomas
+
+Inglês é o padrão; português e espanhol ficam em `/pt/` e `/es/`, com seletor no topo.
+
+| | Home | Case do ERP |
+|---|---|---|
+| EN | `/` | `/work/erp-multimarketplace/` |
+| PT | `/pt/` | `/pt/trabalhos/erp-multimarketplace/` |
+| ES | `/es/` | `/es/trabajos/erp-multimarketplace/` |
+
+- Os textos ficam junto de cada componente, no formato `t({ en, pt, es })` (`useT()` em `src/lib/i18n.tsx`).
+- Rotas e metadados (hreflang, Open Graph) em `src/lib/locales.ts` e `src/components/pages.tsx`; cada arquivo em `src/app/**/page.tsx` só escolhe o idioma.
 
 - Contatos (WhatsApp, e-mail, redes): `src/lib/site.ts`. Os botões, o rodapé e o botão flutuante de WhatsApp aparecem conforme os campos preenchidos.
 - Seções: `src/components/sections.tsx` (hero, faixa de eventos, processo, FAQ, CTA, rodapé), `work.tsx` (case do ERP), `services.tsx` (bento de serviços).
-- Case do ERP: resumo na home (`work.tsx`) e página completa em `/trabalhos/erp-multimarketplace` (`case-erp.tsx`).
+- Case do ERP: resumo na home (`work.tsx`) e página completa (`case-erp.tsx`).
 - As telas do ERP são recriadas em código com dados fictícios (`erp/screens.tsx`, `dashboard-demo.tsx`) e usam a fonte e as cores do próprio sistema pela classe `.erp` (`globals.css`).
 - Números animados em odômetro: `Odometer` em `ui.tsx`.
 - Mascote em pixel art: `src/components/avatar.tsx` (favicon em `src/app/icon.svg`).

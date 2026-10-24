@@ -5,7 +5,10 @@ DirectorySlash On
 ErrorDocument 404 /404.html
 
 # Páginas do site anterior (/work/...) que não existem mais: vão para o início.
-RedirectMatch 301 ^/work(/.*)?$ /
+RedirectMatch 301 ^/work/(nubank-private|vao-arquitetura|barro|automation-platform)/?$ /
+
+# O case em português ficava em /trabalhos/...; hoje fica em /pt/trabalhos/...
+RedirectMatch 301 ^/trabalhos/erp-multimarketplace/?$ /pt/trabalhos/erp-multimarketplace/
 
 # Arquivos com hash no nome (_next/static) nunca mudam: cache longo.
 <IfModule mod_headers.c>

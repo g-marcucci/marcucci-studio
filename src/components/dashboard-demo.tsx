@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
+import { useT, type Tr } from "@/lib/i18n";
 import { brl } from "@/lib/site";
 import { Avatar } from "./avatar";
 import { CountUp, IconBadge, LeaderRow, Money } from "./ui";
@@ -70,6 +71,7 @@ function smoothPath(points: [number, number][]) {
 }
 
 function AreaChart({ period }: { period: Period }) {
+  const t = useT();
   const W = 520;
   const H = 200;
   const n = period === 7 ? 7 : period === 30 ? 30 : 45;
@@ -111,14 +113,15 @@ function AreaChart({ period }: { period: Period }) {
         />
       </svg>
       <div className="mt-2 flex justify-between text-[10px] text-faint">
-        <span>há {period} dias</span>
-        <span>hoje</span>
+        <span>{t({ en: `${period} days ago`, pt: `há ${period} dias`, es: `hace ${period} días` })}</span>
+        <span>{t({ en: "today", pt: "hoje", es: "hoy" })}</span>
       </div>
     </div>
   );
 }
 
 function Donut({ total }: { total: number }) {
+  const t = useT();
   const r = 40;
   const c = 2 * Math.PI * r;
   const gap = 1.6;
@@ -151,7 +154,7 @@ function Donut({ total }: { total: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <CountUp value={total} className="font-display text-[26px] tracking-tight text-fg" />
-        <span className="text-[10px] text-faint">pedidos no período</span>
+        <span className="text-[10px] text-faint">{t({ en: "orders in period", pt: "pedidos no período", es: "pedidos en el período" })}</span>
       </div>
     </div>
   );
@@ -178,28 +181,29 @@ function DotMatrix({ color, filled }: { color: string; filled: number }) {
 }
 
 // Mesmos grupos da barra lateral do ERP (um recorte dos itens de cada um).
-const SIDEBAR = [
+const SIDEBAR: { group: Tr; items: { icon: typeof LayoutGrid; label: Tr; active?: boolean }[] }[] = [
   {
-    group: "Monitorar",
+    group: { en: "Monitor", pt: "Monitorar", es: "Monitorear" },
     items: [
-      { icon: LayoutGrid, label: "Visão geral", active: true },
-      { icon: Activity, label: "Saúde da conta" },
-      { icon: Megaphone, label: "Publicidade" },
+      { icon: LayoutGrid, label: { en: "Overview", pt: "Visão geral", es: "Resumen" }, active: true },
+      { icon: Activity, label: { en: "Account health", pt: "Saúde da conta", es: "Salud de la cuenta" } },
+      { icon: Megaphone, label: { en: "Advertising", pt: "Publicidade", es: "Publicidad" } },
     ],
   },
   {
-    group: "Vendas",
+    group: { en: "Sales", pt: "Vendas", es: "Ventas" },
     items: [
-      { icon: Receipt, label: "Pedidos" },
-      { icon: Users, label: "Clientes" },
-      { icon: ShoppingCart, label: "Carrinhos" },
-      { icon: Tag, label: "Anúncios" },
+      { icon: Receipt, label: { en: "Orders", pt: "Pedidos", es: "Pedidos" } },
+      { icon: Users, label: { en: "Customers", pt: "Clientes", es: "Clientes" } },
+      { icon: ShoppingCart, label: { en: "Carts", pt: "Carrinhos", es: "Carritos" } },
+      { icon: Tag, label: { en: "Listings", pt: "Anúncios", es: "Publicaciones" } },
     ],
   },
-  { group: "Integrações", items: [{ icon: Plug, label: "Conexões" }] },
+  { group: { en: "Integrations", pt: "Integrações", es: "Integraciones" }, items: [{ icon: Plug, label: { en: "Connections", pt: "Conexões", es: "Conexiones" } }] },
 ];
 
 export function DashboardDemo() {
+  const t = useT();
   const [period, setPeriod] = useState<Period>(30);
   const d = DATA[period];
 
@@ -213,7 +217,7 @@ export function DashboardDemo() {
           <span className="size-2.5 rounded-full bg-[#28c840]" />
         </div>
         <div className="mx-auto w-full max-w-sm truncate rounded-md bg-surface px-3 py-1 text-center font-mono text-[11px] text-faint">
-          erp.sualoja.com.br/visao-geral
+          {t({ en: "erp.yourstore.com/overview", pt: "erp.sualoja.com.br/visao-geral", es: "erp.tutienda.com/resumen" })}
         </div>
         <div className="w-10" />
       </div>
@@ -224,22 +228,22 @@ export function DashboardDemo() {
           <div className="mb-3 flex items-center gap-2 px-1.5">
             <Avatar size={22} />
             <div className="leading-tight">
-              <div className="text-[13px] font-medium text-fg">Loja Demo</div>
-              <div className="text-[10px] text-faint">4 lojas conectadas</div>
+              <div className="text-[13px] font-medium text-fg">{t({ en: "Demo Store", pt: "Loja Demo", es: "Tienda Demo" })}</div>
+              <div className="text-[10px] text-faint">{t({ en: "4 stores connected", pt: "4 lojas conectadas", es: "4 tiendas conectadas" })}</div>
             </div>
           </div>
           {SIDEBAR.map(({ group, items }) => (
-            <div key={group} className="mb-2">
-              <div className="px-2.5 pt-1 pb-1 text-[10px] font-medium tracking-wide text-faint uppercase">{group}</div>
+            <div key={group.en} className="mb-2">
+              <div className="px-2.5 pt-1 pb-1 text-[10px] font-medium tracking-wide text-faint uppercase">{t(group)}</div>
               {items.map(({ icon: Icon, label, active }) => (
                 <div
-                  key={label}
+                  key={label.en}
                   className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] ${
                     active ? "bg-accent-soft font-medium text-accent" : "text-muted"
                   }`}
                 >
                   <Icon className="size-3.5" />
-                  {label}
+                  {t(label)}
                 </div>
               ))}
             </div>
@@ -250,17 +254,17 @@ export function DashboardDemo() {
         <div className="min-w-0 flex-1 space-y-3 p-3 md:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <div className="font-display text-xl tracking-tight text-fg md:text-2xl">Visão geral</div>
+              <div className="font-display text-xl tracking-tight text-fg md:text-2xl">{t({ en: "Overview", pt: "Visão geral", es: "Resumen" })}</div>
               <div className="mt-0.5 flex items-center gap-2 text-[12px] text-muted">
-                Suas vendas e pedidos no período
+                {t({ en: "Your sales and orders in the period", pt: "Suas vendas e pedidos no período", es: "Tus ventas y pedidos en el período" })}
                 <span className="hidden items-center gap-1.5 rounded-full border border-line bg-surface px-2 py-0.5 text-[10.5px] sm:flex">
-                  <span className="live-dot size-1.5 rounded-full bg-ok" /> atualizado agora
+                  <span className="live-dot size-1.5 rounded-full bg-ok" /> {t({ en: "updated just now", pt: "atualizado agora", es: "actualizado ahora" })}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <div className="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] text-fg md:flex">
-                <Store className="size-3.5 text-muted" /> Todas as lojas <ChevronDown className="size-3.5 text-faint" />
+                <Store className="size-3.5 text-muted" /> {t({ en: "All stores", pt: "Todas as lojas", es: "Todas las tiendas" })} <ChevronDown className="size-3.5 text-faint" />
               </div>
               <div className="flex rounded-full border border-line bg-surface p-0.5 text-[12px]">
                 {([7, 30, 90] as Period[]).map((p) => (
@@ -272,7 +276,7 @@ export function DashboardDemo() {
                       period === p ? "bg-fg text-bg" : "text-muted hover:text-fg"
                     }`}
                   >
-                    {p} dias
+                    {p} {t({ en: "days", pt: "dias", es: "días" })}
                   </button>
                 ))}
               </div>
@@ -283,10 +287,10 @@ export function DashboardDemo() {
             <IconBadge tone="red">
               <AlertTriangle />
             </IconBadge>
-            <span className="text-[13px] font-medium text-fg">Precisa da sua atenção</span>
-            <span className="text-[12px] text-faint">5 avisos</span>
+            <span className="text-[13px] font-medium text-fg">{t({ en: "Needs your attention", pt: "Precisa da sua atenção", es: "Necesita tu atención" })}</span>
+            <span className="text-[12px] text-faint">{t({ en: "5 alerts", pt: "5 avisos", es: "5 avisos" })}</span>
             <span className="rounded-full bg-[color-mix(in_oklab,var(--nuvem)_12%,transparent)] px-2 py-0.5 text-[11px] text-nuvem">
-              2 urgentes
+              {t({ en: "2 urgent", pt: "2 urgentes", es: "2 urgentes" })}
             </span>
           </div>
 
@@ -298,7 +302,7 @@ export function DashboardDemo() {
                   <IconBadge>
                     <TrendingUp />
                   </IconBadge>
-                  Total de vendas
+                  {t({ en: "Total sales", pt: "Total de vendas", es: "Total de ventas" })}
                 </div>
                 <span className="grid size-7 place-items-center rounded-full border border-line text-muted">
                   <ArrowUpRight className="size-3.5" />
@@ -312,12 +316,12 @@ export function DashboardDemo() {
                     <CountUp value={d.delta} format={(n) => `${Math.round(n)}%`} />
                   </div>
                   <div className="text-[11.5px] text-muted">
-                    +R$ {brl(d.total - d.prev)} vs. período anterior
+                    +R$ {brl(d.total - d.prev)} {t({ en: "vs. previous period", pt: "vs. período anterior", es: "vs. período anterior" })}
                   </div>
                   <div className="mt-5 space-y-2.5 text-[11.5px] md:mt-auto">
                     <div>
                       <div className="flex justify-between text-muted">
-                        <span>Este período</span>
+                        <span>{t({ en: "This period", pt: "Este período", es: "Este período" })}</span>
                         <span className="font-medium text-fg">R$ {brl(d.total)}</span>
                       </div>
                       <motion.div
@@ -329,7 +333,7 @@ export function DashboardDemo() {
                     </div>
                     <div>
                       <div className="flex justify-between text-faint">
-                        <span>Período anterior</span>
+                        <span>{t({ en: "Previous period", pt: "Período anterior", es: "Período anterior" })}</span>
                         <span>R$ {brl(d.prev)}</span>
                       </div>
                       <motion.div
@@ -349,8 +353,8 @@ export function DashboardDemo() {
             {/* marketplaces */}
             <div className="rounded-xl border border-line bg-surface p-4">
               <div className="flex justify-between text-[13px]">
-                <span className="font-medium text-fg">Vendas por marketplace</span>
-                <span className="text-muted">Ver pedidos</span>
+                <span className="font-medium text-fg">{t({ en: "Sales by marketplace", pt: "Vendas por marketplace", es: "Ventas por marketplace" })}</span>
+                <span className="text-muted">{t({ en: "See orders", pt: "Ver pedidos", es: "Ver pedidos" })}</span>
               </div>
               <div className="my-3">
                 <Donut total={d.orders} />
@@ -369,9 +373,9 @@ export function DashboardDemo() {
 
           <div className="hidden gap-3 sm:grid sm:grid-cols-3">
             {[
-              { icon: ShoppingCart, label: "Nº de pedidos", value: d.orders, color: "var(--accent)", foot: "▲ 28% vs. anterior", tone: "accent" },
-              { icon: Tag, label: "Ticket médio", value: d.ticket, money: true, color: "var(--tiktok)", foot: "▼ 2% vs. anterior", tone: "blue" },
-              { icon: Truck, label: "Pedidos entregues", value: d.delivered, color: "var(--teal)", foot: `${Math.round((d.delivered / d.orders) * 100)}% das vendas`, tone: "ok" },
+              { icon: ShoppingCart, label: t({ en: "Orders", pt: "Nº de pedidos", es: "Nº de pedidos" }), value: d.orders, color: "var(--accent)", foot: `▲ 28% ${t({ en: "vs. previous", pt: "vs. anterior", es: "vs. anterior" })}`, tone: "accent" },
+              { icon: Tag, label: t({ en: "Average order", pt: "Ticket médio", es: "Ticket promedio" }), value: d.ticket, money: true, color: "var(--tiktok)", foot: `▼ 2% ${t({ en: "vs. previous", pt: "vs. anterior", es: "vs. anterior" })}`, tone: "blue" },
+              { icon: Truck, label: t({ en: "Delivered orders", pt: "Pedidos entregues", es: "Pedidos entregados" }), value: d.delivered, color: "var(--teal)", foot: `${Math.round((d.delivered / d.orders) * 100)}% ${t({ en: "of sales", pt: "das vendas", es: "de las ventas" })}`, tone: "ok" },
             ].map((k) => (
               <div key={k.label} className="rounded-xl border border-line bg-surface p-4">
                 <div className="flex items-center gap-2.5 text-[13px] text-muted">
