@@ -130,8 +130,8 @@ export function Process() {
   return (
     <section id="processo" className="border-t border-line px-3 py-24 md:px-14 md:py-32">
       <Reveal>
-        <div className="grain-gradient rounded-[28px] p-6 text-white md:p-12">
-          <p className="font-pixel text-[13px] font-bold tracking-[0.18em] text-white/70 uppercase">03 · Processo</p>
+        <div className="brand-panel rounded-[28px] p-6 text-white md:p-12">
+          <p className="font-pixel text-[13px] font-bold tracking-[0.18em] text-[#d4ff4a]/80 uppercase">03 · Processo</p>
           <div className="mt-4 grid gap-6 md:grid-cols-2 md:items-end">
             <h2 className="font-display text-[40px] leading-[0.98] tracking-[-0.03em] md:text-[64px]">
               Você usa o sistema antes de ele ficar pronto.
@@ -143,17 +143,17 @@ export function Process() {
           </div>
           <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
-              <div key={s.title} className="rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+              <div key={s.title} className="rounded-2xl border border-white/15 bg-white/[0.06] p-5 backdrop-blur-sm transition-colors hover:border-[#d4ff4a]/40">
                 <div className="flex items-start justify-between">
                   <span className="font-mono text-[11px] text-white/60">0{i + 1}</span>
-                  <span className="grid size-8 place-items-center rounded-lg bg-white text-[#141416]">
+                  <span className="grid size-8 place-items-center rounded-lg bg-[#d4ff4a] text-[#150d36]">
                     <s.icon className="size-4" />
                   </span>
                 </div>
                 <h3 className="mt-8 flex flex-wrap items-center gap-2 text-[17px] font-medium">
                   {s.title}
                   {s.badge && (
-                    <span className="rounded-full bg-white px-2 py-0.5 text-[10.5px] font-medium text-[#141416]">{s.badge}</span>
+                    <span className="rounded-full bg-[#d4ff4a] px-2 py-0.5 text-[10.5px] font-medium text-[#150d36]">{s.badge}</span>
                   )}
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-relaxed text-white/80">{s.text}</p>
@@ -227,20 +227,20 @@ export function Cta() {
   return (
     <section id="contato" className="border-t border-line px-3 py-24 md:px-14 md:py-32">
       <Reveal>
-        <div className="grain-gradient rounded-[28px] px-6 py-10 text-white md:px-12 md:py-14">
+        <div className="brand-panel rounded-[28px] px-6 py-10 text-white md:px-12 md:py-14">
           <div className="flex justify-between text-[12px] text-white/70">
             <span>Sistemas · Webapps · Automações · Sites</span>
             <span className="hidden sm:block">Projetos sob medida</span>
           </div>
-          <h2 className="mt-10 max-w-3xl font-display text-[44px] leading-[0.98] tracking-[-0.035em] text-white/90 md:text-[80px]">
-            Tem um processo que ainda vive numa planilha? Me conta.
+          <h2 className="mt-10 max-w-3xl font-display text-[44px] leading-[0.98] tracking-[-0.035em] text-white md:text-[80px]">
+            Tem um processo que ainda vive numa planilha? <span className="text-[#d4ff4a]">Me conta.</span>
           </h2>
           <div className="mt-10 flex flex-wrap items-center gap-5">
             <a
               href={href}
               target={isExternal(href) ? "_blank" : undefined}
               rel="noreferrer"
-              className="group flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[15px] font-medium text-[#141416] transition-transform hover:-translate-y-0.5"
+              className="group flex items-center gap-2 rounded-full bg-[#d4ff4a] px-6 py-3 text-[15px] font-medium text-[#150d36] transition-transform hover:-translate-y-0.5"
             >
               Começar um projeto <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </a>
