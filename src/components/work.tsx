@@ -48,8 +48,25 @@ export const META = [
   ["Tipo", "Sistema · ERP"],
   ["Ano", "2026"],
   ["Escopo", "Produto, design e código"],
-  ["Canais", "Mercado Livre · Shopee · TikTok Shop · Nuvemshop"],
+  ["Canais", "Mercado Livre · Shopee · Magalu · TikTok Shop · SHEIN · Dafiti · Leroy Merlin · Nuvemshop"],
 ];
+
+/** Ficha técnica do case (tipo, ano, escopo, canais). */
+export function MetaStrip({ className = "" }: { className?: string }) {
+  return (
+    <dl className={`grid grid-cols-2 border-y border-line md:grid-cols-[0.6fr_0.4fr_0.9fr_2.1fr] ${className}`}>
+      {META.map(([k, v], i) => (
+        <div
+          key={k}
+          className={`py-3 pr-4 ${i % 2 ? "border-l border-line pl-4" : i ? "md:border-l md:border-line md:pl-4" : ""} ${i > 1 ? "border-t border-line md:border-t-0" : ""}`}
+        >
+          <dt className="font-mono text-[10.5px] tracking-wide text-faint uppercase">{k}</dt>
+          <dd className="mt-1 text-[13.5px] leading-snug text-fg">{v}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 
 export function Work() {
   const [active, setActive] = useState(0);
@@ -71,38 +88,27 @@ export function Work() {
     <section id="trabalhos" className="border-t border-line px-5 py-24 md:px-14 md:py-32">
       <Reveal>
         <SectionLabel index="01">Trabalhos</SectionLabel>
-        <div className="mt-6 grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-end">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-2 py-1 font-mono text-[11px] text-muted">
-              <span className="text-accent">case 01</span> sistema sob medida
-            </span>
-            <h2 className="mt-4 font-display text-[36px] leading-[0.95] tracking-[-0.035em] text-fg sm:text-[56px] md:text-[80px]">
-              ERP multimarketplace
-            </h2>
-          </div>
-          <div>
-          <p className="text-[16px] leading-relaxed text-muted md:text-[17px]">
-            Quem vende em quatro marketplaces ao mesmo tempo acaba com quatro painéis e nenhuma visão do todo. Esse ERP
-            junta pedidos, clientes, margem e anúncios num lugar só.{" "}
+        <span className="mt-6 inline-flex items-center gap-2 rounded-md border border-line bg-surface px-2 py-1 font-mono text-[11px] text-muted">
+          <span className="text-accent">case 01</span> sistema sob medida
+        </span>
+        <h2 className="mt-4 font-display text-[36px] leading-[0.95] tracking-[-0.035em] text-fg sm:text-[56px] md:text-[80px]">
+          ERP multimarketplace
+        </h2>
+        <div className="mt-8 grid gap-6 md:mt-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-16">
+          <p className="max-w-2xl text-[16px] leading-relaxed text-muted md:text-[18px]">
+            Quem vende em vários marketplaces ao mesmo tempo acaba com um painel para cada canal e nenhuma visão do todo.
+            Esse ERP junta oito canais, com pedidos, clientes, reputação, margem e anúncios num lugar só.{" "}
             <span className="text-fg">Fiz tudo, da arquitetura e das integrações ao visual de cada tela.</span>
           </p>
           <Link
             href={CASE_HREF}
-            className="group mt-5 inline-flex items-center gap-2 rounded-full bg-fg px-5 py-2.5 text-[14px] font-medium text-bg transition-transform hover:-translate-y-0.5"
+            className="group inline-flex w-fit items-center gap-2 rounded-full bg-fg px-5 py-2.5 text-[14px] font-medium text-bg transition-transform hover:-translate-y-0.5"
           >
             Ver case completo
             <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
-          </div>
         </div>
-        <dl className="mt-10 grid grid-cols-2 border-y border-line md:grid-cols-[0.7fr_0.5fr_1fr_1.8fr]">
-          {META.map(([k, v], i) => (
-            <div key={k} className={`py-3 pr-4 ${i % 2 ? "border-l border-line pl-4" : i ? "md:border-l md:border-line md:pl-4" : ""} ${i > 1 ? "border-t border-line md:border-t-0" : ""}`}>
-              <dt className="font-mono text-[10.5px] tracking-wide text-faint uppercase">{k}</dt>
-              <dd className="mt-1 text-[13.5px] text-fg">{v}</dd>
-            </div>
-          ))}
-        </dl>
+        <MetaStrip className="mt-10" />
       </Reveal>
 
       {/* Palco do case: fundo próprio com grid, módulos em linha e a tela em destaque */}
