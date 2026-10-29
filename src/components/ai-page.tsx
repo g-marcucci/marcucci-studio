@@ -796,219 +796,295 @@ function Routing() {
 
 /* ── Sob controle ──────────────────────────────────────────────────────────── */
 
-const APPROVALS: { what: Tr; ref: string; why: Tr; agent: number }[] = [
+// Uma execução de verdade, do chamado ao fechamento: no passo 3 ela para e espera
+// você aprovar o reembolso. Log, aprovação e orçamento andam juntos.
+const TRACE: { agent: number | null; text: Tr; cost: number }[] = [
+  { agent: 0, text: { en: "Read ticket #4821: refund request", pt: "Leu o chamado #4821: pedido de reembolso", es: "Leyó el ticket #4821: pedido de reembolso" }, cost: 0.004 },
+  { agent: 1, text: { en: "Found the policy: 7 days to return", pt: "Achou a política: 7 dias para devolver", es: "Encontró la política: 7 días para devolver" }, cost: 0.002 },
+  { agent: 2, text: { en: "Order delivered 3 days ago, first refund", pt: "Pedido entregue há 3 dias, primeiro reembolso", es: "Pedido entregado hace 3 días, primer reembolso" }, cost: 0 },
+  { agent: 3, text: { en: "Refund R$ 189,90 needs approval", pt: "Reembolso de R$ 189,90 precisa de aprovação", es: "Reembolso de R$ 189,90 necesita aprobación" }, cost: 0.003 },
+  { agent: null, text: { en: "Approved by you", pt: "Aprovado por você", es: "Aprobado por ti" }, cost: 0 },
+  { agent: 2, text: { en: "Refund issued through the payment API", pt: "Reembolso feito pela API de pagamento", es: "Reembolso hecho por la API de pago" }, cost: 0 },
+  { agent: 2, text: { en: "Customer notified on WhatsApp", pt: "Cliente avisado no WhatsApp", es: "Cliente avisado por WhatsApp" }, cost: 0 },
+  { agent: 3, text: { en: "Run closed and logged", pt: "Execução encerrada e registrada", es: "Ejecución cerrada y registrada" }, cost: 0.001 },
+];
+const WAIT_AT = 3;
+
+/** Avança a execução enquanto o painel está na tela; segura no passo que espera aprovação. */
+function useControlRun(active: boolean) {
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    const ms = p === WAIT_AT ? 2800 : p >= TRACE.length - 1 ? 3600 : 1150;
+    const id = setTimeout(() => setP((x) => (x >= TRACE.length - 1 ? 0 : x + 1)), ms);
+    return () => clearTimeout(id);
+  }, [p, active]);
+  return p;
+}
+
+function Tile({ icon, title, text, className = "", children }: { icon: React.ReactNode; title: Tr; text: Tr; className?: string; children: React.ReactNode }) {
+  const t = useT();
+  return (
+    <div className={`flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5 ${className}`}>
+      <div className="flex items-start gap-3">
+        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[0.07] text-[#d4ff4a] [&_svg]:size-4">{icon}</span>
+        <div className="min-w-0">
+          <h3 className="text-[15px] font-medium text-white">{t(title)}</h3>
+          <p className="mt-0.5 text-[12.5px] leading-relaxed text-white/50">{t(text)}</p>
+        </div>
+      </div>
+      <div className="mt-4 flex-1">{children}</div>
+    </div>
+  );
+}
+
+const QUEUE: { what: Tr; ref: string; why: Tr }[] = [
   {
-    what: {
-      en: "Refund R$ 189,90",
-      pt: "Reembolso de R$ 189,90",
-      es: "Reembolso de R$ 189,90",
-    },
+    what: { en: "Refund R$ 189,90", pt: "Reembolso de R$ 189,90", es: "Reembolso de R$ 189,90" },
     ref: "#4821",
-    why: {
-      en: "Within the 7-day policy, customer's first request.",
-      pt: "Dentro da política de 7 dias, primeiro pedido do cliente.",
-      es: "Dentro de la política de 7 días, primer pedido del cliente.",
-    },
-    agent: 3,
+    why: { en: "Within the 7-day policy, first request", pt: "Dentro da política de 7 dias, primeiro pedido", es: "Dentro de la política de 7 días, primer pedido" },
   },
   {
-    what: {
-      en: "15% discount on a quote",
-      pt: "Desconto de 15% num orçamento",
-      es: "Descuento del 15% en un presupuesto",
-    },
+    what: { en: "15% discount on a quote", pt: "Desconto de 15% num orçamento", es: "Descuento del 15% en un presupuesto" },
     ref: "#318",
-    why: {
-      en: "Above the 10% limit, but the client buys every month.",
-      pt: "Acima do limite de 10%, mas o cliente compra todo mês.",
-      es: "Sobre el límite del 10%, pero el cliente compra cada mes.",
-    },
-    agent: 0,
+    why: { en: "Above the 10% limit", pt: "Acima do limite de 10%", es: "Sobre el límite del 10%" },
   },
   {
-    what: {
-      en: "Reply to a complaint",
-      pt: "Resposta a uma reclamação",
-      es: "Respuesta a un reclamo",
-    },
+    what: { en: "Reply to a complaint", pt: "Resposta a uma reclamação", es: "Respuesta a un reclamo" },
     ref: "#2207",
-    why: {
-      en: "Reviewer flagged an upset tone. Draft is ready.",
-      pt: "O revisor marcou tom irritado. O rascunho está pronto.",
-      es: "El revisor marcó un tono molesto. El borrador está listo.",
-    },
-    agent: 3,
+    why: { en: "Upset tone flagged by the reviewer", pt: "Tom irritado marcado pelo revisor", es: "Tono molesto marcado por el revisor" },
   },
 ];
 
-/** Fila de aprovação: um pedido entra, o botão "Aprovar" é clicado e entra o próximo. */
-function ApprovalDemo() {
-  const t = useT();
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { margin: "-80px" });
-  const [state, setState] = useState({ i: 0, approved: false });
-  useEffect(() => {
-    if (!inView) return;
-    const id = setTimeout(
-      () =>
-        setState((s) =>
-          s.approved
-            ? { i: (s.i + 1) % APPROVALS.length, approved: false }
-            : { ...s, approved: true },
-        ),
-      state.approved ? 1500 : 2600,
-    );
-    return () => clearTimeout(id);
-  }, [state, inView]);
-  const item = APPROVALS[state.i];
-  const agent = AGENTS[item.agent];
-
+/** Setinha de mouse em pixel. */
+function Cursor() {
   return (
-    <div
-      ref={ref}
-      className="stage-panel flex h-full min-h-[340px] flex-col justify-center overflow-hidden rounded-[22px] border border-white/10 p-5 text-white md:p-8"
-    >
-      <div className="flex items-center justify-between font-mono text-[11px] text-white/45">
-        <span>
-          {t({ en: "approvals", pt: "aprovações", es: "aprobaciones" })}
+    <svg viewBox="0 0 8 12" className="h-5 w-[14px] drop-shadow-[0_2px_4px_rgb(0_0_0/0.6)]" shapeRendering="crispEdges" aria-hidden>
+      <path d="M0 0h1v1h1v1h1v1h1v1h1v1h1v1h1v1H5v1h1v2H5v1H4V9H3v1H2v1H1v1H0z" fill="#fff" />
+      <path d="M1 2h1v1h1v1h1v1h1v1h1v1H4v2H3V8H2v1H1z" fill="#14111d" />
+    </svg>
+  );
+}
+
+function Approvals({ p }: { p: number }) {
+  const t = useT();
+  const waiting = p === WAIT_AT;
+  const approved = p > WAIT_AT;
+  // o reembolso só entra na fila quando o revisor pede (passo 3)
+  // até lá, uma vaga livre segura a altura da fila
+  const items = p < WAIT_AT ? [...QUEUE.slice(1), null] : QUEUE;
+  return (
+    <div className="space-y-2">
+      <AnimatePresence initial={false} mode="popLayout">
+        {items.map((q) => {
+          if (!q)
+            return (
+              <motion.div
+                key="free"
+                layout
+                exit={{ opacity: 0 }}
+                className="flex h-[98px] items-center justify-center rounded-xl border border-dashed border-white/10 font-mono text-[11px] text-white/30"
+              >
+                {t({ en: "queue clear", pt: "fila livre", es: "cola libre" })}
+              </motion.div>
+            );
+          const live = q.ref === "#4821";
+          return (
+            <motion.div
+              key={q.ref}
+              layout
+              initial={{ opacity: 0, y: -12, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className={`relative h-[98px] rounded-xl border p-3 transition-colors duration-500 ${
+                live && waiting ? "border-[#f2c200]/70 bg-[#f2c200]/[0.06]" : live && approved ? "border-[#d4ff4a]/40 bg-[#d4ff4a]/[0.05]" : "border-white/10 bg-[#1b1733]"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate text-[13.5px] font-medium text-white">{t(q.what)}</span>
+                <span className="shrink-0 font-mono text-[10.5px] text-white/35">{q.ref}</span>
+              </div>
+              <p className="mt-0.5 truncate text-[12px] text-white/50">{t(q.why)}</p>
+              <div className="mt-2.5 flex items-center gap-1.5">
+                {live && approved ? (
+                  <span className="flex items-center gap-1.5 font-mono text-[11px]" style={{ color: LIME }}>
+                    <Check className="size-3.5" strokeWidth={3} /> {t({ en: "approved by you · 14:02", pt: "aprovado por você · 14:02", es: "aprobado por ti · 14:02" })}
+                  </span>
+                ) : (
+                  <>
+                    <span
+                      className={`rounded-full px-3 py-1 text-[11.5px] font-medium ${live ? "text-[#150d36]" : "bg-white/10 text-white/60"}`}
+                      style={live ? { background: LIME } : undefined}
+                    >
+                      {t({ en: "Approve", pt: "Aprovar", es: "Aprobar" })}
+                    </span>
+                    <span className="rounded-full border border-white/15 px-3 py-1 text-[11.5px] text-white/55">{t({ en: "Edit", pt: "Editar", es: "Editar" })}</span>
+                    {live && (
+                      <span className="ml-auto hidden items-center gap-1.5 font-mono text-[10.5px] whitespace-nowrap text-[#f2c200] sm:flex">
+                        <span className="size-1.5 animate-pulse rounded-full bg-[#f2c200]" />
+                        {t({ en: "run paused", pt: "execução pausada", es: "ejecución en pausa" })}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+              {/* a setinha vai até o "Aprovar" e clica */}
+              {live && waiting && (
+                <motion.span
+                  className="pointer-events-none absolute left-9 top-[62px] z-10"
+                  initial={{ x: 140, y: 40, opacity: 0 }}
+                  animate={{ x: 0, y: 0, opacity: 1, scale: [1, 1, 0.8, 1] }}
+                  transition={{ duration: 1.3, delay: 0.7, ease: [0.22, 1, 0.36, 1], scale: { delay: 2.1, duration: 0.3 } }}
+                >
+                  <Cursor />
+                </motion.span>
+              )}
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function Trace({ p }: { p: number }) {
+  const t = useT();
+  return (
+    <ol className="relative">
+      <span className="absolute top-2 bottom-2 left-1 w-px bg-white/10 sm:left-[47px]" />
+      {TRACE.map((s, i) => {
+        const done = i < p || (i === p && i !== WAIT_AT);
+        const current = i === p;
+        const color = s.agent === null ? LIME : AGENTS[s.agent].color;
+        const who = s.agent === null ? t({ en: "you", pt: "você", es: "tú" }) : t(AGENTS[s.agent].role).toLowerCase();
+        return (
+          <li
+            key={i}
+            className="relative flex items-center gap-3 py-[5px] font-mono text-[11.5px] transition-opacity duration-500"
+            style={{ opacity: i <= p ? 1 : 0.22 }}
+          >
+            <span className="hidden w-8 shrink-0 text-right text-white/30 sm:block">{`0:${String(i * 2 + 1).padStart(2, "0")}`}</span>
+            <span className="relative z-10 grid size-[9px] shrink-0 place-items-center">
+              <span
+                className={`size-[9px] rounded-full border-2 ${current ? "animate-pulse" : ""}`}
+                style={{ borderColor: color, background: done ? color : "#110e22" }}
+              />
+            </span>
+            <span className="w-[68px] shrink-0 truncate md:w-[84px]" style={{ color }}>
+              {who}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-white/75">{t(s.text)}</span>
+            {current && i === WAIT_AT ? (
+              <span className="shrink-0 rounded bg-[#f2c200]/15 px-1.5 text-[10px] text-[#f2c200]">⏸ {t({ en: "waiting", pt: "aguardando", es: "esperando" })}</span>
+            ) : (
+              <span className="hidden w-14 shrink-0 text-right text-white/30 sm:block">{s.cost ? `$${s.cost.toFixed(3)}` : "—"}</span>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+const WEEK = [14.2, 9.8, 16.5, 11.2, 18.9, 7.5];
+const CEILING = 20;
+
+function Budget({ p }: { p: number }) {
+  const t = useT();
+  const { locale } = useLocale();
+  const run = TRACE.slice(0, p + 1).reduce((s, x) => s + x.cost, 0);
+  const today = 12.4 + run;
+  const days = [...WEEK, today];
+  const fmt = (n: number, d = 2) => n.toLocaleString(locale === "en" ? "en" : locale === "pt" ? "pt-BR" : "es", { minimumFractionDigits: d, maximumFractionDigits: d });
+  return (
+    <div>
+      <div className="flex items-baseline justify-between">
+        <span className="font-display text-[26px] tracking-tight text-white">
+          <span className="mr-1 text-[0.5em] text-white/45">US$</span>
+          {fmt(today)}
         </span>
-        <span>
-          {APPROVALS.length - state.i - (state.approved ? 1 : 0)}{" "}
-          {t({ en: "pending", pt: "pendentes", es: "pendientes" })}
+        <span className="font-mono text-[11px] text-white/45">
+          / {fmt(CEILING, 0)} {t({ en: "per day", pt: "por dia", es: "por día" })}
         </span>
       </div>
-      <div className="relative mt-4 h-[210px]">
-        {/* cartas de trás da pilha */}
-        <div className="absolute inset-x-6 top-3 h-full rounded-2xl border border-white/5 bg-white/[0.03]" />
-        <div className="absolute inset-x-3 top-1.5 h-full rounded-2xl border border-white/10 bg-white/[0.04]" />
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.div
-            key={state.i}
-            initial={{ opacity: 0, y: 20, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 60, rotate: 4 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-0 flex flex-col rounded-2xl border border-white/15 bg-[#1b1733] p-5"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span
-                className="flex items-center gap-1.5 font-mono text-[10.5px]"
-                style={{ color: agent.color }}
-              >
-                <span
-                  className="size-1.5 rounded-[2px]"
-                  style={{ background: agent.color }}
-                />
-                {t(agent.role).toLowerCase()}{" "}
-                {t({ en: "asks", pt: "pede", es: "pide" })}
-              </span>
-              <span className="font-mono text-[11px] text-white/35">
-                {item.ref}
-              </span>
-            </div>
-            <div className="mt-3 font-display text-[22px] leading-tight tracking-tight">
-              {t(item.what)}
-            </div>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">
-              {t(item.why)}
-            </p>
-            <div className="mt-auto flex items-center gap-2 pt-4">
-              <motion.span
-                className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-medium text-[#150d36]"
-                style={{ background: LIME }}
-                animate={
-                  state.approved ? { scale: [1, 0.92, 1] } : { scale: 1 }
-                }
-                transition={{ duration: 0.3 }}
-              >
-                <Check className="size-3.5" strokeWidth={3} />
-                {state.approved
-                  ? t({ en: "Approved", pt: "Aprovado", es: "Aprobado" })
-                  : t({ en: "Approve", pt: "Aprovar", es: "Aprobar" })}
-              </motion.span>
-              <span className="rounded-full border border-white/15 px-4 py-1.5 text-[13px] text-white/70">
-                {t({ en: "Edit", pt: "Editar", es: "Editar" })}
-              </span>
-              <AnimatePresence>
-                {state.approved && (
-                  <motion.span
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="ml-auto font-mono text-[10.5px] text-white/45"
-                  >
-                    {t({
-                      en: "by you · logged",
-                      pt: "por você · registrado",
-                      es: "por ti · registrado",
-                    })}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+      <div className="relative mt-2 h-2 rounded-full bg-white/10">
+        <motion.div className="h-full rounded-full" style={{ background: LIME }} animate={{ width: `${(today / CEILING) * 100}%` }} transition={{ duration: 0.6 }} />
+      </div>
+      {/* últimos 7 dias com a linha do teto */}
+      <div className="relative mt-5 flex h-[86px] items-end gap-2">
+        <span className="absolute inset-x-0 top-0 border-t border-dashed border-[#ff8fc4]/60" />
+        <span className="absolute -top-2 right-0 bg-[#110e22] pl-1.5 font-mono text-[9.5px] text-[#ff8fc4]/80">{t({ en: "ceiling", pt: "teto", es: "techo" })}</span>
+        {days.map((d, i) => (
+          <div key={i} className="flex flex-1 flex-col items-center gap-1">
+            <motion.div
+              className="w-full rounded-t-[4px]"
+              style={{ background: i === days.length - 1 ? LIME : "rgb(255 255 255 / 0.16)" }}
+              initial={{ height: 0 }}
+              whileInView={{ height: `${(d / CEILING) * 86}px` }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: i * 0.05 }}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex justify-between font-mono text-[10px] text-white/35">
+        <span>{t({ en: "7 days ago", pt: "há 7 dias", es: "hace 7 días" })}</span>
+        <span>
+          {t({ en: "this run", pt: "esta execução", es: "esta ejecución" })}: <span className="text-white/70">US$ {fmt(run, 3)}</span>
+        </span>
       </div>
     </div>
   );
 }
 
-const CONTROLS: { icon: React.ReactNode; title: Tr; text: Tr }[] = [
-  {
-    icon: <UserCheck />,
-    title: {
-      en: "A person approves what matters",
-      pt: "Uma pessoa aprova o que importa",
-      es: "Una persona aprueba lo importante",
-    },
-    text: {
-      en: "Refunds, discounts, sensitive replies: you set the rules for what waits for a yes.",
-      pt: "Reembolsos, descontos, respostas delicadas: você define o que espera um sim.",
-      es: "Reembolsos, descuentos, respuestas delicadas: tú defines qué espera un sí.",
-    },
-  },
-  {
-    icon: <History />,
-    title: {
-      en: "Every step is logged",
-      pt: "Cada passo fica registrado",
-      es: "Cada paso queda registrado",
-    },
-    text: {
-      en: "What each agent read, decided and did, with the time and cost. Nothing happens in a black box.",
-      pt: "O que cada agente leu, decidiu e fez, com horário e custo. Nada acontece numa caixa-preta.",
-      es: "Qué leyó, decidió e hizo cada agente, con hora y costo. Nada pasa en una caja negra.",
-    },
-  },
-  {
-    icon: <Wallet />,
-    title: {
-      en: "Budget with a ceiling",
-      pt: "Orçamento com teto",
-      es: "Presupuesto con techo",
-    },
-    text: {
-      en: "Limits per run and per day. If something goes off the rails, it stops before it costs you.",
-      pt: "Limites por execução e por dia. Se algo sair do trilho, para antes de custar caro.",
-      es: "Límites por ejecución y por día. Si algo se desvía, se detiene antes de costar caro.",
-    },
-  },
-  {
-    icon: <Gauge />,
-    title: {
-      en: "Tested on real cases",
-      pt: "Testado com casos reais",
-      es: "Probado con casos reales",
-    },
-    text: {
-      en: "Each change runs against a set of your real cases before going live, so quality only goes up.",
-      pt: "Cada mudança roda contra um conjunto dos seus casos reais antes de ir ao ar, para a qualidade só subir.",
-      es: "Cada cambio corre contra un conjunto de tus casos reales antes de salir, para que la calidad solo suba.",
-    },
-  },
-];
+const EVAL_FAILS = [37, 88];
+
+function Evals() {
+  const t = useT();
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <div ref={ref}>
+      <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[3px]">
+        {Array.from({ length: 120 }, (_, i) => {
+          const fail = EVAL_FAILS.includes(i);
+          return (
+            <motion.span
+              key={i}
+              className="aspect-square rounded-[2px]"
+              initial={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+              animate={inView ? { backgroundColor: fail ? "#f2c200" : "rgba(212,255,74,0.75)" } : {}}
+              transition={{ delay: 0.2 + i * 0.014, duration: 0.2 }}
+            />
+          );
+        })}
+      </div>
+      <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
+        <span className="font-display text-[26px] tracking-tight text-white">
+          118<span className="text-white/35">/120</span>
+        </span>
+        <span className="flex items-center gap-1.5 font-mono text-[11px] text-white/55">
+          <span className="size-2 rounded-[2px] bg-[#f2c200]" />
+          {t({ en: "2 fixed before release", pt: "2 corrigidos antes de publicar", es: "2 corregidos antes de publicar" })}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function Control() {
   const t = useT();
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { margin: "-120px" });
+  const p = useControlRun(inView);
+  const status =
+    p === WAIT_AT
+      ? { text: t({ en: "waiting for you", pt: "esperando você", es: "esperándote" }), color: "#f2c200" }
+      : p >= TRACE.length - 1
+        ? { text: t({ en: "done · logged", pt: "pronto · registrado", es: "listo · registrado" }), color: LIME }
+        : { text: t({ en: "running", pt: "rodando", es: "corriendo" }), color: "#22c55e" };
+
   return (
     <section className={SECTION}>
       <SectionHead
@@ -1019,29 +1095,82 @@ function Control() {
           pt: "Autônomo onde é seguro. Seu onde conta.",
           es: "Autónomo donde es seguro. Tuyo donde cuenta.",
         }}
+        text={{
+          en: "Every agent team comes with a control room: what it did, what it's waiting for, how much it spent and how well it's doing.",
+          pt: "Toda equipe de agentes vem com uma sala de controle: o que fez, o que está esperando, quanto gastou e como está indo.",
+          es: "Cada equipo de agentes viene con una sala de control: qué hizo, qué está esperando, cuánto gastó y cómo le va.",
+        }}
       />
-      <div className="mt-12 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Reveal className="h-full">
-          <ApprovalDemo />
-        </Reveal>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {CONTROLS.map((c, i) => (
-            <Reveal key={c.title.en} delay={0.05 * i} className="h-full">
-              <div className="flex h-full flex-col rounded-[20px] border border-line bg-surface p-5 shadow-[var(--shadow)]">
-                <span className="grid size-9 place-items-center rounded-xl bg-accent-soft text-accent [&_svg]:size-[18px]">
-                  {c.icon}
-                </span>
-                <h3 className="mt-4 text-[16px] font-medium text-fg">
-                  {t(c.title)}
-                </h3>
-                <p className="mt-1 text-[13.5px] leading-relaxed text-muted">
-                  {t(c.text)}
-                </p>
-              </div>
-            </Reveal>
-          ))}
+      <Reveal delay={0.05}>
+        <div ref={ref} className="stage-panel mt-12 overflow-hidden rounded-[28px] border border-white/10 text-white">
+          <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3 font-mono text-[11px] md:px-6">
+            <span className="text-white/40">control.room</span>
+            <span className="text-white/20">·</span>
+            <span className="min-w-0 flex-1 truncate text-white/70">{t({ en: "run", pt: "execução", es: "ejecución" })} #1042</span>
+            <span className="flex shrink-0 items-center gap-1.5" style={{ color: status.color }}>
+              <span className="size-1.5 rounded-full" style={{ background: status.color, boxShadow: `0 0 8px ${status.color}` }} />
+              {status.text}
+            </span>
+          </div>
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-3 p-3 md:p-4 lg:grid-cols-12">
+            <Tile
+              className="lg:col-span-5"
+              icon={<UserCheck />}
+              title={{ en: "A person approves what matters", pt: "Uma pessoa aprova o que importa", es: "Una persona aprueba lo importante" }}
+              text={{
+                en: "Refunds, discounts, sensitive replies: the run pauses until you say yes.",
+                pt: "Reembolsos, descontos, respostas delicadas: a execução pausa até você dizer sim.",
+                es: "Reembolsos, descuentos, respuestas delicadas: la ejecución se pausa hasta que digas sí.",
+              }}
+            >
+              <Approvals p={p} />
+            </Tile>
+            <Tile
+              className="lg:col-span-7"
+              icon={<History />}
+              title={{ en: "Every step is logged", pt: "Cada passo fica registrado", es: "Cada paso queda registrado" }}
+              text={{
+                en: "Who did what, when and for how much. Nothing happens in a black box.",
+                pt: "Quem fez o quê, quando e por quanto. Nada acontece numa caixa-preta.",
+                es: "Quién hizo qué, cuándo y por cuánto. Nada pasa en una caja negra.",
+              }}
+            >
+              <Trace p={p} />
+            </Tile>
+            <Tile
+              className="lg:col-span-6"
+              icon={<Wallet />}
+              title={{ en: "Budget with a ceiling", pt: "Orçamento com teto", es: "Presupuesto con techo" }}
+              text={{
+                en: "Limits per run and per day. If something goes off the rails, it stops before it costs you.",
+                pt: "Limites por execução e por dia. Se algo sair do trilho, para antes de custar caro.",
+                es: "Límites por ejecución y por día. Si algo se desvía, se detiene antes de costar caro.",
+              }}
+            >
+              <Budget p={p} />
+            </Tile>
+            <Tile
+              className="lg:col-span-6"
+              icon={<Gauge />}
+              title={{ en: "Tested on real cases", pt: "Testado com casos reais", es: "Probado con casos reales" }}
+              text={{
+                en: "Each change runs against your real cases before going live. Each failure becomes a new test.",
+                pt: "Cada mudança roda contra seus casos reais antes de ir ao ar. Cada falha vira um teste novo.",
+                es: "Cada cambio corre contra tus casos reales antes de salir. Cada falla se vuelve una prueba nueva.",
+              }}
+            >
+              <Evals />
+            </Tile>
+          </div>
         </div>
-      </div>
+        <p className="mt-3 text-center text-[12px] text-faint">
+          {t({
+            en: "Sample run with fictitious data.",
+            pt: "Execução de exemplo, com dados fictícios.",
+            es: "Ejecución de ejemplo, con datos ficticios.",
+          })}
+        </p>
+      </Reveal>
     </section>
   );
 }
