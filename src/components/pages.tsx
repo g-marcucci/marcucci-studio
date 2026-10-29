@@ -4,6 +4,7 @@ import { site } from "@/lib/site";
 import { CaseErp } from "./case-erp";
 import { LocaleProvider } from "@/lib/i18n";
 import { Nav } from "./nav";
+import { Orchestra } from "./orchestra";
 import { Cta, EventsMarquee, Faq, Footer, Hero, Process, WhatsAppFloat } from "./sections";
 import { Services } from "./services";
 import { Work } from "./work";
@@ -85,6 +86,7 @@ export function HomePage({ locale }: { locale: Locale }) {
       <div className="h-8 md:h-10" />
       <Work />
       <Services />
+      <Orchestra />
       <Process />
       <Faq />
     </Frame>

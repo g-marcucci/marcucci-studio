@@ -243,3 +243,54 @@ body {
   --rep-green: #39c672;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 20px rgb(0 0 0 / 0.35);
 }
+
+/* Palco da orquestra de IAs: escuro nos dois temas, com brilho violeta e grade de pontos. */
+.stage-panel {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(50% 60% at 30% 0%, rgb(106 77 245 / 0.32), transparent 70%),
+    radial-gradient(40% 50% at 100% 100%, rgb(212 255 74 / 0.06), transparent 70%),
+    #110e22;
+}
+.stage-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  mask-image: radial-gradient(70% 70% at 40% 40%, black, transparent 90%);
+}
+
+/* O maestro marca o tempo: corpo, mão esquerda e batuta no mesmo compasso. */
+@keyframes conduct-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.45px); }
+}
+.conduct-bob {
+  animation: conduct-bob 0.85s ease-in-out infinite;
+}
+@keyframes arm-beat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+.conduct-arm {
+  animation: arm-beat 0.85s ease-in-out infinite;
+}
+@keyframes baton-wobble {
+  0%, 100% { transform: rotate(-9deg); }
+  50% { transform: rotate(9deg); }
+}
+.baton-wobble {
+  transform-box: view-box;
+  transform-origin: 14.5px 12px;
+  animation: baton-wobble 0.85s ease-in-out infinite;
+}
+@keyframes dash-flow {
+  to { stroke-dashoffset: -24; }
+}
+.dash-flow {
+  animation: dash-flow 0.7s linear infinite;
+}
