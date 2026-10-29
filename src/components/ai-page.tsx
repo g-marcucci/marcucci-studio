@@ -1349,46 +1349,158 @@ const BUILD: { title: Tr; text: Tr; out: Tr }[] = [
   },
 ];
 
+// Quanto do trabalho os agentes já fazem em cada etapa, e o que fica com você.
+const AUTONOMY: { agents: number; you: Tr }[] = [
+  { agents: 0, you: { en: "Show me how it's done today", pt: "Mostrar como é feito hoje", es: "Mostrar cómo se hace hoy" } },
+  { agents: 20, you: { en: "Judge the answers on real cases", pt: "Avaliar as respostas em casos reais", es: "Evaluar las respuestas en casos reales" } },
+  { agents: 45, you: { en: "Set the rules and the limits", pt: "Definir as regras e os limites", es: "Definir las reglas y los límites" } },
+  { agents: 70, you: { en: "Approve every action", pt: "Aprovar cada ação", es: "Aprobar cada acción" } },
+  { agents: 90, you: { en: "Approve only the exceptions", pt: "Aprovar só as exceções", es: "Aprobar solo las excepciones" } },
+];
+
 function Build() {
   const t = useT();
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { margin: "-120px" });
+  const [step, setStep] = useState(0);
+  const [auto, setAuto] = useState(true);
+  useEffect(() => {
+    if (!inView || !auto) return;
+    const id = setTimeout(() => setStep((s) => (s + 1) % BUILD.length), 4200);
+    return () => clearTimeout(id);
+  }, [step, inView, auto]);
+  const pick = (i: number) => {
+    setAuto(false);
+    setStep(i);
+  };
+  const b = BUILD[step];
+  const a = AUTONOMY[step];
+
   return (
     <section className="border-t border-line px-3 py-20 md:px-14 md:py-28">
       <Reveal>
-        <div className="brand-panel rounded-[28px] p-6 text-white md:p-12">
-          <p className="font-pixel text-[13px] font-bold tracking-[0.18em] text-[#d4ff4a]/80 uppercase">
-            05 ·{" "}
-            {t({
-              en: "How we build it",
-              pt: "Como construímos",
-              es: "Cómo lo construimos",
-            })}
-          </p>
-          <h2 className="mt-4 max-w-3xl font-display text-[36px] leading-[0.98] tracking-[-0.03em] md:text-[56px]">
-            {t({
-              en: "From the first case to running on its own.",
-              pt: "Do primeiro caso até rodar sozinho.",
-              es: "Del primer caso a correr solo.",
-            })}
-          </h2>
-          <ol className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {BUILD.map((b, i) => (
-              <li
-                key={b.title.en}
-                className="flex flex-col rounded-2xl border border-white/15 bg-white/[0.06] p-5 backdrop-blur-sm"
-              >
-                <span className="font-pixel text-[28px] font-black leading-none text-[#d4ff4a]">
-                  0{i + 1}
+        <div ref={ref} className="brand-panel rounded-[28px] p-6 text-white md:p-12">
+          <div className="grid gap-6 md:grid-cols-2 md:items-end">
+            <div>
+              <p className="font-pixel text-[13px] font-bold tracking-[0.18em] text-[#d4ff4a]/80 uppercase">
+                05 · {t({ en: "How we build it", pt: "Como construímos", es: "Cómo lo construimos" })}
+              </p>
+              <h2 className="mt-4 font-display text-[36px] leading-[0.98] tracking-[-0.03em] md:text-[56px]">
+                {t({ en: "From the first case to running on its own.", pt: "Do primeiro caso até rodar sozinho.", es: "Del primer caso a correr solo." })}
+              </h2>
+            </div>
+            <p className="max-w-md text-[15px] leading-relaxed text-white/75 md:justify-self-end">
+              {t({
+                en: "Autonomy is earned step by step. The agents take on more of the work only after proving they can, and you never stop being in charge.",
+                pt: "A autonomia vem aos poucos. Os agentes assumem mais do trabalho só depois de provarem que dão conta, e você nunca deixa de mandar.",
+                es: "La autonomía llega de a poco. Los agentes asumen más del trabajo solo después de probar que pueden, y tú nunca dejas de mandar.",
+              })}
+            </p>
+          </div>
+
+          {/* trilha: cinco paradas numa linha que vai se preenchendo */}
+          <div className="relative mt-12">
+            <div className="absolute top-[19px] right-[10%] left-[10%] h-0.5 bg-white/15">
+              <motion.div
+                className="h-full"
+                style={{ background: LIME, boxShadow: `0 0 10px ${LIME}` }}
+                animate={{ width: `${(step / (BUILD.length - 1)) * 100}%` }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              />
+            </div>
+            <ol className="relative grid grid-cols-5">
+              {BUILD.map((s, i) => {
+                const on = i === step;
+                const past = i < step;
+                return (
+                  <li key={s.title.en} className="flex justify-center">
+                    <button type="button" onClick={() => pick(i)} aria-pressed={on} className="group flex flex-col items-center gap-3 text-center">
+                      <span
+                        className={`grid size-10 place-items-center rounded-xl border font-pixel text-[15px] font-black transition-all duration-300 ${
+                          on
+                            ? "scale-110 border-transparent text-[#150d36]"
+                            : past
+                              ? "border-[#d4ff4a]/50 bg-[#1d1150] text-[#d4ff4a]"
+                              : "border-white/20 bg-[#1d1150] text-white/55 group-hover:border-white/40"
+                        }`}
+                        style={on ? { background: LIME, boxShadow: `0 0 24px ${LIME}88` } : undefined}
+                      >
+                        0{i + 1}
+                      </span>
+                      <span
+                        className={`hidden max-w-[150px] text-[13.5px] leading-snug transition-colors md:block ${on ? "text-white" : "text-white/55 group-hover:text-white/80"}`}
+                      >
+                        {t(s.title)}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+
+          {/* etapa da vez */}
+          <div className="mt-8 grid overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] backdrop-blur-sm md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+            <div className="relative min-h-[370px] p-6 md:min-h-[230px] md:p-8">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                  <span className="font-mono text-[11px] tracking-wider text-[#d4ff4a]/80 uppercase">
+                    {t({ en: "step", pt: "etapa", es: "etapa" })} 0{step + 1} / 0{BUILD.length}
+                  </span>
+                  <h3 className="mt-3 font-display text-[28px] leading-tight tracking-tight md:text-[34px]">{t(b.title)}</h3>
+                  <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-white/75">{t(b.text)}</p>
+                  <span className="mt-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[13px]">
+                    <span className="font-mono text-[10.5px] tracking-wider text-white/50 uppercase">{t({ en: "you get", pt: "você recebe", es: "recibes" })}</span>
+                    {t(b.out)}
+                  </span>
+                </motion.div>
+              </AnimatePresence>
+              {/* barra do tempo de cada etapa enquanto ela avança sozinha */}
+              {auto && inView && (
+                <motion.span
+                  key={`bar-${step}`}
+                  className="absolute bottom-0 left-0 h-0.5 bg-[#d4ff4a]/60"
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 4.2, ease: "linear" }}
+                />
+              )}
+            </div>
+
+            <div className="flex flex-col justify-center border-t border-white/10 p-6 md:border-t-0 md:border-l md:p-8">
+              <span className="font-mono text-[11px] tracking-wider text-white/50 uppercase">
+                {t({ en: "who does the work", pt: "quem faz o trabalho", es: "quién hace el trabajo" })}
+              </span>
+              <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-white/15">
+                <motion.div
+                  className="h-full"
+                  style={{ background: LIME }}
+                  animate={{ width: `${a.agents}%` }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                />
+              </div>
+              <div className="mt-3 flex items-baseline justify-between gap-4">
+                <span>
+                  <span className="block font-display text-[30px] leading-none tracking-tight tabular-nums" style={{ color: LIME }}>
+                    {a.agents}%
+                  </span>
+                  <span className="mt-1 block text-[12.5px] text-white/60">{t({ en: "agents", pt: "agentes", es: "agentes" })}</span>
                 </span>
-                <h3 className="mt-4 text-[16px] font-medium">{t(b.title)}</h3>
-                <p className="mt-1.5 flex-1 text-[13.5px] leading-relaxed text-white/70">
-                  {t(b.text)}
-                </p>
-                <span className="mt-4 w-fit rounded-md border border-white/15 px-2 py-0.5 font-mono text-[10.5px] text-white/70">
-                  → {t(b.out)}
+                <span className="text-right">
+                  <span className="block font-display text-[30px] leading-none tracking-tight tabular-nums">{100 - a.agents}%</span>
+                  <span className="mt-1 block text-[12.5px] text-white/60">{t({ en: "your team", pt: "sua equipe", es: "tu equipo" })}</span>
                 </span>
-              </li>
-            ))}
-          </ol>
+              </div>
+              <div className="mt-6 rounded-xl border border-white/10 bg-[#150d36]/40 px-4 py-3">
+                <span className="font-mono text-[10.5px] tracking-wider text-white/45 uppercase">{t({ en: "your part", pt: "sua parte", es: "tu parte" })}</span>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.p key={step} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-0.5 min-h-[44px] text-[15px] md:min-h-0">
+                    {t(a.you)}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
         </div>
       </Reveal>
     </section>
