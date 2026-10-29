@@ -1038,35 +1038,127 @@ function Budget({ p }: { p: number }) {
   );
 }
 
+// Bateria de testes: 120 casos reais rodam contra a nova versão. As duas falhas
+// são corrigidas e viram teste novo; no fim a versão é liberada.
+const EVAL_TOTAL = 120;
 const EVAL_FAILS = [37, 88];
+const EVAL_CASES: Tr[] = [
+  { en: "Refund inside the 7-day window", pt: "Reembolso dentro dos 7 dias", es: "Reembolso dentro de los 7 días" },
+  { en: "Customer asks for tracking code", pt: "Cliente pede código de rastreio", es: "Cliente pide código de seguimiento" },
+  { en: "Order with two shipments", pt: "Pedido com dois envios", es: "Pedido con dos envíos" },
+  { en: "Question about warranty", pt: "Dúvida sobre garantia", es: "Duda sobre garantía" },
+  { en: "Address change after shipping", pt: "Troca de endereço depois do envio", es: "Cambio de dirección tras el envío" },
+  { en: "Invoice with a missing tax ID", pt: "Nota sem CNPJ", es: "Factura sin RUT" },
+  { en: "Product out of stock", pt: "Produto sem estoque", es: "Producto sin stock" },
+  { en: "Duplicate charge", pt: "Cobrança duplicada", es: "Cobro duplicado" },
+];
+const EVAL_FAIL_TEXT: Record<number, Tr> = {
+  37: { en: "Angry customer, refund over R$ 500", pt: "Cliente irritado, reembolso acima de R$ 500", es: "Cliente molesto, reembolso sobre R$ 500" },
+  88: { en: "Promised a delivery date it can't keep", pt: "Prometeu prazo que não pode cumprir", es: "Prometió un plazo que no puede cumplir" },
+};
+const EVAL_SCORES: { label: Tr; value: number }[] = [
+  { label: { en: "policy", pt: "política", es: "política" }, value: 100 },
+  { label: { en: "tone", pt: "tom", es: "tono" }, value: 98 },
+  { label: { en: "data", pt: "dados", es: "datos" }, value: 100 },
+  { label: { en: "handoff", pt: "escalonar", es: "escalar" }, value: 96 },
+];
 
 function Evals() {
   const t = useT();
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const inView = useInView(ref, { margin: "-60px" });
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    const id = setTimeout(() => setN((x) => (x >= EVAL_TOTAL ? 0 : Math.min(EVAL_TOTAL, x + 3))), n >= EVAL_TOTAL ? 4200 : n === 0 ? 600 : 140);
+    return () => clearTimeout(id);
+  }, [n, inView]);
+  const done = n >= EVAL_TOTAL;
+  const fails = EVAL_FAILS.filter((f) => f < n).length;
+  // a última falha fica fixa no topo por um tempo; embaixo, os casos mais recentes
+  const recent = [n - 1, n - 2, n - 3].filter((i) => i >= 0);
+  const lastFail = [...EVAL_FAILS].reverse().find((f) => f < n && n - f <= 15);
+  const rows = done
+    ? [...EVAL_FAILS, EVAL_TOTAL - 1]
+    : lastFail === undefined
+      ? recent
+      : [lastFail, ...recent.filter((i) => i !== lastFail)].slice(0, 3);
+
   return (
-    <div ref={ref}>
-      <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[3px]">
-        {Array.from({ length: 120 }, (_, i) => {
+    <div ref={ref} className="flex h-full flex-col">
+      <div className="flex items-baseline justify-between">
+        <span className="font-display text-[26px] tracking-tight text-white tabular-nums">
+          {n}
+          <span className="text-white/35">/{EVAL_TOTAL}</span>
+        </span>
+        <span className="font-mono text-[11px] text-white/45">
+          {t({ en: "real cases · v1.4", pt: "casos reais · v1.4", es: "casos reales · v1.4" })}
+        </span>
+      </div>
+      <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-white/10">
+        <div className="h-full rounded-full transition-[width] duration-150" style={{ width: `${(n / EVAL_TOTAL) * 100}%`, background: LIME }} />
+      </div>
+
+      {/* últimos casos: as falhas ficam à vista até virarem teste novo */}
+      <ul className="mt-4 h-[96px] space-y-1.5 overflow-hidden">
+        {rows.map((i) => {
           const fail = EVAL_FAILS.includes(i);
           return (
-            <motion.span
-              key={i}
-              className="aspect-square rounded-[2px]"
-              initial={{ backgroundColor: "rgba(255,255,255,0.08)" }}
-              animate={inView ? { backgroundColor: fail ? "#f2c200" : "rgba(212,255,74,0.75)" } : {}}
-              transition={{ delay: 0.2 + i * 0.014, duration: 0.2 }}
-            />
+            <li key={i} className="flex items-center gap-2.5 font-mono text-[11.5px]">
+              <span className="w-9 shrink-0 text-white/30">#{String(i + 1).padStart(3, "0")}</span>
+              <span className={`min-w-0 flex-1 truncate ${fail ? "text-white/85" : "text-white/60"}`}>
+                {t(fail ? EVAL_FAIL_TEXT[i] : EVAL_CASES[i % EVAL_CASES.length])}
+              </span>
+              {fail ? (
+                <span className="shrink-0 rounded bg-[#f2c200]/15 px-1.5 text-[10px] text-[#f2c200]">
+                  ✗<span className="hidden sm:inline"> → {t({ en: "fixed, new test", pt: "corrigido, teste novo", es: "corregido, prueba nueva" })}</span>
+                </span>
+              ) : (
+                <span className="shrink-0" style={{ color: LIME }}>
+                  ✓
+                </span>
+              )}
+            </li>
           );
         })}
+      </ul>
+
+      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-white/10 pt-3 sm:grid-cols-4 sm:gap-3">
+        {EVAL_SCORES.map((s) => (
+          <div key={s.label.en}>
+            <div className="flex items-baseline justify-between gap-1">
+              <span className="font-mono text-[10px] text-white/40">{t(s.label)}</span>
+              <span className="text-[13px] text-white tabular-nums transition-opacity duration-500" style={{ opacity: done ? 1 : 0 }}>
+                {s.value}%
+              </span>
+            </div>
+            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full transition-[width] duration-150"
+                style={{ width: `${(s.value * n) / EVAL_TOTAL}%`, background: s.value === 100 ? LIME : "#b7a6ff" }}
+              />
+            </div>
+          </div>
+        ))}
       </div>
-      <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-display text-[26px] tracking-tight text-white">
-          118<span className="text-white/35">/120</span>
+
+      <div className="mt-auto flex items-center justify-between gap-2 pt-4 font-mono text-[11px]">
+        <span className="text-white/45">
+          {fails} {t({ en: "failed, fixed before release", pt: "falharam, corrigidos antes", es: "fallaron, corregidos antes" })}
         </span>
-        <span className="flex items-center gap-1.5 font-mono text-[11px] text-white/55">
-          <span className="size-2 rounded-[2px] bg-[#f2c200]" />
-          {t({ en: "2 fixed before release", pt: "2 corrigidos antes de publicar", es: "2 corregidos antes de publicar" })}
+        <span
+          className="flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 transition-colors duration-500"
+          style={done ? { borderColor: `${LIME}66`, color: LIME, background: `${LIME}12` } : { borderColor: "rgb(255 255 255 / 0.12)", color: "rgb(255 255 255 / 0.5)" }}
+        >
+          {done ? (
+            <>
+              <Check className="size-3" strokeWidth={3} /> {t({ en: "release approved", pt: "liberado para publicar", es: "liberado para publicar" })}
+            </>
+          ) : (
+            <>
+              <span className="size-1.5 animate-pulse rounded-full bg-white/50" /> {t({ en: "testing", pt: "testando", es: "probando" })}
+            </>
+          )}
         </span>
       </div>
     </div>
