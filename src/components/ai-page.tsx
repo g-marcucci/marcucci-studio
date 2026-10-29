@@ -1354,7 +1354,7 @@ function Build() {
   return (
     <section className="border-t border-line px-3 py-20 md:px-14 md:py-28">
       <Reveal>
-        <div className="brand-panel rounded-[28px] p-6 text-white md:p-12">
+        <div className="brand-panel rounded-[28px] p-6 text-white md:p-12" style={{ overflow: "clip" }}>
           <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14">
             {/* título fica parado enquanto os passos rolam ao lado */}
             <div className="lg:sticky lg:top-28 lg:self-start">
@@ -1373,9 +1373,7 @@ function Build() {
               </p>
             </div>
 
-            <ol className="relative space-y-3">
-              {/* fio ligando os números */}
-              <span className="absolute top-8 bottom-8 left-[39px] w-px bg-gradient-to-b from-[#d4ff4a]/50 via-white/15 to-[#d4ff4a]/50 md:left-[43px]" />
+            <ol className="space-y-3">
               {BUILD.map((b, i) => (
                 <Reveal key={b.title.en} delay={0.05 * i}>
                   <li className="relative grid grid-cols-[48px_minmax(0,1fr)] gap-4 rounded-2xl border border-white/15 bg-white/[0.06] p-4 backdrop-blur-sm transition-colors hover:bg-white/[0.09] md:grid-cols-[56px_minmax(0,1fr)_auto] md:items-center md:gap-5 md:p-5">
