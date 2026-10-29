@@ -19,7 +19,6 @@ export const site = {
     { id: "home", label: { en: "Home", pt: "Início", es: "Inicio" } },
     { id: "work", label: { en: "Work", pt: "Trabalhos", es: "Trabajos" } },
     { id: "services", label: { en: "Services", pt: "Serviços", es: "Servicios" } },
-    { id: "ai", label: { en: "AI", pt: "IA", es: "IA" } },
     { id: "process", label: { en: "Process", pt: "Processo", es: "Proceso" } },
     { id: "contact", label: { en: "Contact", pt: "Contato", es: "Contacto" } },
   ] satisfies { id: string; label: Tr }[],

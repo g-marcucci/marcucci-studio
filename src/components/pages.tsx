@@ -86,9 +86,29 @@ export function HomePage({ locale }: { locale: Locale }) {
       <div className="h-8 md:h-10" />
       <Work />
       <Services />
-      <Orchestra />
       <Process />
       <Faq />
+    </Frame>
+  );
+}
+
+// Prévia da seção de orquestra de IAs, para avaliar antes de entrar na home.
+export const PREVIEW_AI: Record<Locale, string> = { en: "/preview/ai/", pt: "/pt/preview/ai/", es: "/es/preview/ai/" };
+
+export const previewAiMetadata = (locale: Locale): Metadata => ({
+  ...meta(
+    locale,
+    PREVIEW_AI,
+    { en: `Preview · AI orchestration · ${site.name}`, pt: `Prévia · Orquestra de IAs · ${site.name}`, es: `Vista previa · Orquesta de IAs · ${site.name}` },
+    { en: "Section preview.", pt: "Prévia da seção.", es: "Vista previa de la sección." },
+  ),
+  robots: { index: false, follow: false },
+});
+
+export function PreviewAiPage({ locale }: { locale: Locale }) {
+  return (
+    <Frame locale={locale} alternates={PREVIEW_AI}>
+      <Orchestra />
     </Frame>
   );
 }
