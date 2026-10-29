@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { CASE_PATH, HOME, HTML_LANG, LOCALES } from "@/lib/locales";
+import { AI_PATH, CASE_PATH, HOME, HTML_LANG, LOCALES } from "@/lib/locales";
 import { site } from "@/lib/site";
 
 export const dynamic = "force-static";
@@ -8,6 +8,7 @@ export const dynamic = "force-static";
 export default function sitemap(): MetadataRoute.Sitemap {
   const pages = [
     { paths: HOME, changeFrequency: "monthly" as const, priority: 1 },
+    { paths: AI_PATH, changeFrequency: "monthly" as const, priority: 0.9 },
     { paths: CASE_PATH, changeFrequency: "yearly" as const, priority: 0.8 },
   ];
   return pages.flatMap(({ paths, changeFrequency, priority }) =>

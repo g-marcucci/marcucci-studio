@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { CASE_PATH, HOME, HTML_LANG, LOCALES, OG_LOCALE, type Locale, type Tr } from "@/lib/locales";
+import { AI_PATH, CASE_PATH, HOME, HTML_LANG, LOCALES, OG_LOCALE, type Locale, type Tr } from "@/lib/locales";
 import { site } from "@/lib/site";
 import { CaseErp } from "./case-erp";
 import { LocaleProvider } from "@/lib/i18n";
 import { Nav } from "./nav";
-import { Orchestra } from "./orchestra";
+import { AiService } from "./ai-page";
+import { AiSection } from "./orchestra";
 import { Cta, EventsMarquee, Faq, Footer, Hero, Process, WhatsAppFloat } from "./sections";
 import { Services } from "./services";
 import { Work } from "./work";
@@ -86,29 +87,33 @@ export function HomePage({ locale }: { locale: Locale }) {
       <div className="h-8 md:h-10" />
       <Work />
       <Services />
+      <AiSection />
       <Process />
       <Faq />
     </Frame>
   );
 }
 
-// Prévia da seção de orquestra de IAs, para avaliar antes de entrar na home.
-export const PREVIEW_AI: Record<Locale, string> = { en: "/preview/ai/", pt: "/pt/preview/ai/", es: "/es/preview/ai/" };
-
-export const previewAiMetadata = (locale: Locale): Metadata => ({
-  ...meta(
+export const aiMetadata = (locale: Locale) =>
+  meta(
     locale,
-    PREVIEW_AI,
-    { en: `Preview · AI orchestration · ${site.name}`, pt: `Prévia · Orquestra de IAs · ${site.name}`, es: `Vista previa · Orquesta de IAs · ${site.name}` },
-    { en: "Section preview.", pt: "Prévia da seção.", es: "Vista previa de la sección." },
-  ),
-  robots: { index: false, follow: false },
-});
+    AI_PATH,
+    {
+      en: `AI agents and multi-agent automation · ${site.name}`,
+      pt: `Agentes de IA e automação multiagente · ${site.name}`,
+      es: `Agentes de IA y automatización multiagente · ${site.name}`,
+    },
+    {
+      en: "Teams of AI agents that split the work between LLMs, read your data, use your tools and call a person when it matters. Designed, built and monitored end to end.",
+      pt: "Equipes de agentes de IA que dividem o trabalho entre LLMs, leem seus dados, usam suas ferramentas e chamam uma pessoa quando importa. Desenhadas, construídas e acompanhadas de ponta a ponta.",
+      es: "Equipos de agentes de IA que dividen el trabajo entre LLMs, leen tus datos, usan tus herramientas y llaman a una persona cuando importa. Diseñados, construidos y acompañados de punta a punta.",
+    },
+  );
 
-export function PreviewAiPage({ locale }: { locale: Locale }) {
+export function AiPage({ locale }: { locale: Locale }) {
   return (
-    <Frame locale={locale} alternates={PREVIEW_AI}>
-      <Orchestra />
+    <Frame locale={locale} alternates={AI_PATH}>
+      <AiService />
     </Frame>
   );
 }

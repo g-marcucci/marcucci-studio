@@ -30,6 +30,8 @@ Inglês é o padrão; português e espanhol ficam em `/pt/` e `/es/`, com seleto
 | PT | `/pt/` | `/pt/trabalhos/erp-multimarketplace/` |
 | ES | `/es/` | `/es/trabajos/erp-multimarketplace/` |
 
+Página do serviço de agentes de IA: `/services/ai-agents/`, `/pt/servicos/agentes-de-ia/` e `/es/servicios/agentes-de-ia/` (`ai-page.tsx`). A seção da home e o palco animado ficam em `orchestra.tsx`.
+
 - Os textos ficam junto de cada componente, no formato `t({ en, pt, es })` (`useT()` em `src/lib/i18n.tsx`).
 - Rotas e metadados (hreflang, Open Graph) em `src/lib/locales.ts` e `src/components/pages.tsx`; cada arquivo em `src/app/**/page.tsx` só escolhe o idioma.
 

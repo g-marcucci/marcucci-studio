@@ -298,7 +298,7 @@ export function Process() {
       <Reveal>
         <div className="brand-panel rounded-[28px] p-6 text-white md:p-12">
           <p className="font-pixel text-[13px] font-bold tracking-[0.18em] text-[#d4ff4a]/80 uppercase">
-            03 · {t({ en: "Process", pt: "Processo", es: "Proceso" })}
+            04 · {t({ en: "Process", pt: "Processo", es: "Proceso" })}
           </p>
           <div className="mt-4 grid gap-6 md:grid-cols-2 md:items-end">
             <h2 className="font-display text-[40px] leading-[0.98] tracking-[-0.03em] md:text-[64px]">
@@ -385,14 +385,14 @@ const FAQ: { q: Tr; a: Tr }[] = [
   },
 ];
 
-export function Faq() {
+export function Faq({ items = FAQ, index = "05" }: { items?: { q: Tr; a: Tr }[]; index?: string } = {}) {
   const t = useT();
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section id="faq" className="border-t border-line px-5 py-24 md:px-14 md:py-32">
       <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr]">
         <Reveal>
-          <SectionLabel index="04">{t({ en: "Questions", pt: "Dúvidas", es: "Dudas" })}</SectionLabel>
+          <SectionLabel index={index}>{t({ en: "Questions", pt: "Dúvidas", es: "Dudas" })}</SectionLabel>
           <h2 className="mt-4 font-display text-[44px] leading-[0.98] tracking-[-0.03em] text-fg md:text-[64px]">
             {t({ en: "Frequently", pt: "Perguntas", es: "Preguntas" })}{" "}
             <span className="text-faint">{t({ en: "asked questions.", pt: "frequentes.", es: "frecuentes." })}</span>
@@ -400,7 +400,7 @@ export function Faq() {
         </Reveal>
         <Reveal delay={0.05}>
           <div className="border-t border-line">
-            {FAQ.map((f, i) => (
+            {items.map((f, i) => (
               <div key={f.q.en} className="border-b border-line">
                 <button
                   type="button"

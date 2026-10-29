@@ -21,3 +21,10 @@ export const CASE_PATH: Record<Locale, string> = {
   pt: "/pt/trabalhos/erp-multimarketplace/",
   es: "/es/trabajos/erp-multimarketplace/",
 };
+
+/** Página do serviço de agentes de IA em cada idioma. */
+export const AI_PATH: Record<Locale, string> = {
+  en: "/services/ai-agents/",
+  pt: "/pt/servicos/agentes-de-ia/",
+  es: "/es/servicios/agentes-de-ia/",
+};
