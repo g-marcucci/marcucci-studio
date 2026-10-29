@@ -1,29 +1,13 @@
 "use client";
 
-import {
-  ArrowLeft,
-  BookOpen,
-  Bot,
-  Check,
-  ClipboardList,
-  FileText,
-  Gauge,
-  Headphones,
-  History,
-  MessageCircle,
-  Network,
-  Plug,
-  ShieldCheck,
-  TrendingUp,
-  UserCheck,
-  Wallet,
-} from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { AnimatePresence, motion, useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { HOME, useLocale, useT, type Tr } from "@/lib/i18n";
 import { AGENTS, LIME, OrchestraPanel } from "./orchestra";
 import { Faq } from "./sections";
 import { Reveal, SectionLabel } from "./ui";
+import { PixelIcon } from "./pixel-icons";
 
 // Página do serviço de agentes de IA. Os exemplos (pedidos, valores, chamados)
 // são fictícios e só ilustram como o fluxo funciona.
@@ -189,7 +173,7 @@ const CASES: {
   agents: number[];
 }[] = [
   {
-    icon: <Headphones />,
+    icon: <PixelIcon name="headset" />,
     title: {
       en: "Customer support",
       pt: "Atendimento",
@@ -203,7 +187,7 @@ const CASES: {
     agents: [1, 2, 3],
   },
   {
-    icon: <FileText />,
+    icon: <PixelIcon name="document" />,
     title: {
       en: "Documents into data",
       pt: "Documentos viram dados",
@@ -217,7 +201,7 @@ const CASES: {
     agents: [1, 3, 2],
   },
   {
-    icon: <TrendingUp />,
+    icon: <PixelIcon name="chart" />,
     title: {
       en: "Reports that explain",
       pt: "Relatórios que explicam",
@@ -231,7 +215,7 @@ const CASES: {
     agents: [2, 1, 0],
   },
   {
-    icon: <MessageCircle />,
+    icon: <PixelIcon name="chat" />,
     title: {
       en: "Sales on WhatsApp",
       pt: "Vendas no WhatsApp",
@@ -245,7 +229,7 @@ const CASES: {
     agents: [0, 2, 3],
   },
   {
-    icon: <ClipboardList />,
+    icon: <PixelIcon name="clipboard" />,
     title: {
       en: "Back-office routines",
       pt: "Rotinas de back-office",
@@ -259,7 +243,7 @@ const CASES: {
     agents: [0, 2],
   },
   {
-    icon: <BookOpen />,
+    icon: <PixelIcon name="book" />,
     title: {
       en: "Company knowledge",
       pt: "Conhecimento da empresa",
@@ -301,7 +285,7 @@ function UseCases() {
           <Reveal key={c.title.en} delay={0.04 * i} className="h-full">
             <div className="group flex h-full flex-col rounded-[20px] border border-line bg-surface p-5 shadow-[var(--shadow)] transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-line-strong">
               <div className="flex items-center justify-between">
-                <span className="grid size-9 place-items-center rounded-xl bg-accent-soft text-accent [&_svg]:size-[18px]">
+                <span className="grid size-11 place-items-center rounded-xl border border-line bg-surface-2 text-accent">
                   {c.icon}
                 </span>
                 <span className="font-mono text-[11px] text-faint">
@@ -339,7 +323,7 @@ const LAYERS: {
   code: Line[];
 }[] = [
   {
-    icon: <Bot />,
+    icon: <PixelIcon name="bot" />,
     title: { en: "Orchestrator", pt: "Orquestrador", es: "Orquestador" },
     text: {
       en: "Receives the goal, plans the steps and decides who does what. It knows when to stop and when to call a person.",
@@ -370,7 +354,7 @@ const LAYERS: {
     ],
   },
   {
-    icon: <Network />,
+    icon: <PixelIcon name="network" />,
     title: {
       en: "Specialist agents",
       pt: "Agentes especialistas",
@@ -404,7 +388,7 @@ const LAYERS: {
     ],
   },
   {
-    icon: <Plug />,
+    icon: <PixelIcon name="plug" />,
     title: { en: "Tools", pt: "Ferramentas", es: "Herramientas" },
     text: {
       en: "The hands of the team: APIs and MCP servers for the ERP, WhatsApp, email and spreadsheets, each with its own permission.",
@@ -427,7 +411,7 @@ const LAYERS: {
     ],
   },
   {
-    icon: <BookOpen />,
+    icon: <PixelIcon name="book" />,
     title: { en: "Knowledge", pt: "Conhecimento", es: "Conocimiento" },
     text: {
       en: "Your documents and data indexed for search (RAG), so answers come from your rules, with the source attached.",
@@ -450,7 +434,7 @@ const LAYERS: {
     ],
   },
   {
-    icon: <ShieldCheck />,
+    icon: <PixelIcon name="shield" />,
     title: { en: "Guardrails", pt: "Limites", es: "Límites" },
     text: {
       en: "Budgets, approval rules, logs of every step and tests on real cases before each change goes live.",
@@ -555,7 +539,7 @@ function Anatomy() {
                   }`}
                 >
                   <span
-                    className={`grid size-9 shrink-0 place-items-center rounded-xl [&_svg]:size-[18px] ${on ? "bg-accent text-white" : "bg-surface-2 text-muted"}`}
+                    className={`grid size-11 shrink-0 place-items-center rounded-xl border transition-colors ${on ? "border-accent bg-accent text-white" : "border-line bg-surface-2 text-muted"}`}
                   >
                     {l.icon}
                   </span>
@@ -827,7 +811,7 @@ function Tile({ icon, title, text, className = "", children }: { icon: React.Rea
   return (
     <div className={`flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5 ${className}`}>
       <div className="flex items-start gap-3">
-        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[0.07] text-[#d4ff4a] [&_svg]:size-4">{icon}</span>
+        <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-[#d4ff4a]">{icon}</span>
         <div className="min-w-0">
           <h3 className="text-[15px] font-medium text-white">{t(title)}</h3>
           <p className="mt-0.5 text-[12.5px] leading-relaxed text-white/50">{t(text)}</p>
@@ -1207,7 +1191,7 @@ function Control() {
           <div className="grid grid-cols-[minmax(0,1fr)] gap-3 p-3 md:p-4 lg:grid-cols-12">
             <Tile
               className="lg:col-span-5"
-              icon={<UserCheck />}
+              icon={<PixelIcon name="approve" />}
               title={{ en: "A person approves what matters", pt: "Uma pessoa aprova o que importa", es: "Una persona aprueba lo importante" }}
               text={{
                 en: "Refunds, discounts, sensitive replies: the run pauses until you say yes.",
@@ -1219,7 +1203,7 @@ function Control() {
             </Tile>
             <Tile
               className="lg:col-span-7"
-              icon={<History />}
+              icon={<PixelIcon name="log" />}
               title={{ en: "Every step is logged", pt: "Cada passo fica registrado", es: "Cada paso queda registrado" }}
               text={{
                 en: "Who did what, when and for how much. Nothing happens in a black box.",
@@ -1231,7 +1215,7 @@ function Control() {
             </Tile>
             <Tile
               className="lg:col-span-6"
-              icon={<Wallet />}
+              icon={<PixelIcon name="budget" />}
               title={{ en: "Budget with a ceiling", pt: "Orçamento com teto", es: "Presupuesto con techo" }}
               text={{
                 en: "Limits per run and per day. If something goes off the rails, it stops before it costs you.",
@@ -1243,7 +1227,7 @@ function Control() {
             </Tile>
             <Tile
               className="lg:col-span-6"
-              icon={<Gauge />}
+              icon={<PixelIcon name="tests" />}
               title={{ en: "Tested on real cases", pt: "Testado com casos reais", es: "Probado con casos reales" }}
               text={{
                 en: "Each change runs against your real cases before going live. Each failure becomes a new test.",
