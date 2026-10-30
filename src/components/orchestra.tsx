@@ -1,11 +1,10 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Database, Network, Plug, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion, useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { AI_PATH, HTML_LANG, useLocale, useT, type Tr } from "@/lib/i18n";
 import { Odometer, Reveal, SectionLabel } from "./ui";
-import { PixelIcon } from "./pixel-icons";
 
 // Orquestra de IAs: um maestro (o mascote do Claude Code) rege quatro agentes,
 // cada um num modelo. A cada compasso ele aponta a batuta para um agente, que
@@ -888,7 +887,7 @@ export const CAPABILITIES: {
   tags: string[];
 }[] = [
   {
-    icon: <PixelIcon name="network" />,
+    icon: <Network />,
     title: {
       en: "Agents that split the work",
       pt: "Agentes que dividem o trabalho",
@@ -902,7 +901,7 @@ export const CAPABILITIES: {
     tags: ["multi-agent", "workflows"],
   },
   {
-    icon: <PixelIcon name="database" />,
+    icon: <Database />,
     title: {
       en: "Answers from your data",
       pt: "Respostas a partir dos seus dados",
@@ -916,7 +915,7 @@ export const CAPABILITIES: {
     tags: ["RAG", "embeddings"],
   },
   {
-    icon: <PixelIcon name="plug" />,
+    icon: <Plug />,
     title: {
       en: "Plugged into your tools",
       pt: "Ligado nas suas ferramentas",
@@ -930,7 +929,7 @@ export const CAPABILITIES: {
     tags: ["MCP", "tool use", "APIs"],
   },
   {
-    icon: <PixelIcon name="shield" />,
+    icon: <ShieldCheck />,
     title: {
       en: "Right model, under control",
       pt: "Modelo certo, sob controle",
@@ -1170,7 +1169,7 @@ export function AiSection() {
                   key={c.title.en}
                   className="flex gap-3.5 border-b border-line py-4 last:border-b-0"
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-line bg-surface-2 text-accent">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent [&_svg]:size-4">
                     {c.icon}
                   </span>
                   <span>
